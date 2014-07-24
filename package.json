@@ -1,0 +1,31 @@
+{
+  "name": "wechat-lite",
+  "version": "1.0.0",
+  "description": "wechat js api",
+  "main": "wechat.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/song940/wechat-lite.git"
+  },
+  "keywords": [
+    "wechat",
+    "js",
+    "api"
+  ],
+  "author": "lsong",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/song940/wechat-lite/issues"
+  },
+  "homepage": "https://github.com/song940/wechat-lite",
+  "dependencies": {
+    "express-xml": "^1.0.1",
+    "jstoxml": "^0.2.2"
+  },
+  "devDependencies": {
+    "express": "^4.6.1"
+  }
+}
