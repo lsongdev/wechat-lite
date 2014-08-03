@@ -1,27 +1,23 @@
 # wechat-lite
 
-[WeChat]() API for nodejs .
+[WeChat](https://wx.qq.com/) API for nodejs .
 
 [![NPM](https://nodei.co/npm/wechat-lite.png?downloads=true&stars=true)](https://nodei.co/npm/wechat-lite/)
 
 
 ## Installation
 
-	npm install wechat-lite
+	npm install wechat-lite --save
 
 ## Usage
 
-	var express = require('express');
-  	var wechat = require('wechat-lite');
+	var express 	= require('express');
+	var wechat	= require('wechat-lite');
 	
 	var app = express();
 	
 	app.use('/wechat', wechat('token', function(req, res){
-		var ToUserName = req.msg['ToUserName'];
-  		var FromUserName = req.msg['FromUserName'];
-  		req.msg['ToUserName'] = FromUserName;
-  		req.msg['FromUserName'] = ToUserName;
-  		res.reply(req.msg);
+  		res.reply('Hello World');
 	}));
 
 ## Licence
