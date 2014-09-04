@@ -11,14 +11,24 @@
 
 ## Usage
 
-	var express 	= require('express');
-	var wechat	= require('wechat-lite');
-	
-	var app = express();
-	
-	app.use('/wechat', wechat('token', function(req, res){
-  		res.reply('Hello World');
-	}));
+````javascript
+var express 	= require('express');
+var xmlParser 	= require('express-xml');
+var wechat		= require('wechat-lite');
+
+var app = express();
+
+app.use(xmlParser);
+
+app.use('/wechat', wechat('token', function(req, res){
+	console.log(req.msg);
+		res.reply('Hello World');
+}));
+
+var server = app.listen(3000, function(){
+	console.log('server is running at %s .', server.address().port);
+});	
+````
 
 ## Licence
 

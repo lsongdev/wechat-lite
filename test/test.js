@@ -1,6 +1,6 @@
 var express = require('express');
 var xmlParser = require('express-xml');
-var wechat = require('./wechat');
+var wechat = require('../');
 
 var app = express();
 
