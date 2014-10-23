@@ -22,7 +22,7 @@ app.use(xmlParser);
 
 app.use('/wechat', wechat('token', function(req, res){
 	console.log(req.msg);
-		res.reply('Hello World');
+	res.reply('Hello World');
 }));
 
 var server = app.listen(3000, function(){
