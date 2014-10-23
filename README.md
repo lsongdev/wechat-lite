@@ -1,5 +1,7 @@
 # wechat-lite
 
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/song940/wechat-lite?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [WeChat](https://wx.qq.com/) API for nodejs .
 
 [![NPM](https://nodei.co/npm/wechat-lite.png?downloads=true&stars=true)](https://nodei.co/npm/wechat-lite/)
@@ -22,7 +24,7 @@ app.use(xmlParser);
 
 app.use('/wechat', wechat('token', function(req, res){
 	console.log(req.msg);
-		res.reply('Hello World');
+	res.reply('Hello World');
 }));
 
 var server = app.listen(3000, function(){
