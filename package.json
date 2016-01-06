@@ -22,11 +22,18 @@
   },
   "homepage": "https://github.com/song940/wechat-lite",
   "dependencies": {
-    "jstoxml": "*",
+    "babel-core": "^6.3.26",
+    "debug": "^2.2.0",
     "express": "*",
-    "express-xml": "*"
+    "express-xml": "*",
+    "jstoxml": "*",
+    "superagent": "^1.6.1",
+    "superagent-thunkify": "^1.0.1"
   },
   "directories": {
     "test": "test"
+  },
+  "devDependencies": {
+    "co": "^4.6.0"
   }
 }
