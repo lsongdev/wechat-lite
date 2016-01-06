@@ -1,8 +1,8 @@
 {
   "name": "wechat-lite",
-  "version": "1.0.5",
+  "version": "2.1.0",
   "description": "wechat js api",
-  "main": "wechat.js",
+  "main": "index.js",
   "scripts": {
     "test": "node test/test.js"
   },
@@ -22,9 +22,8 @@
   },
   "homepage": "https://github.com/song940/wechat-lite",
   "dependencies": {
-    "jstoxml": "*",
-    "express": "*",
-    "express-xml": "*"
+    "debug": "*",
+    "request-js": "^1.0.1"
   },
   "directories": {
     "test": "test"
