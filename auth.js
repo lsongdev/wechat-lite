@@ -121,7 +121,7 @@ class WechatAuth extends EventEmitter {
   genSignature(ticket){
     function signature(params){
       var shasum = crypto.createHash('sha1');
-      shasum.update(Object.keys(params).sort().map((key)=>{
+      shasum.update(Object.keys(params).sort().map(function(key){
         return [ key , params[ key ] ].join('=');
       }).join('&'));
       params.signature = shasum.digest('hex');
