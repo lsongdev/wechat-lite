@@ -24,8 +24,6 @@
   "dependencies": {
     "babel-core": "^6.3.26",
     "debug": "^2.2.0",
-    "express": "*",
-    "express-xml": "*",
     "jstoxml": "*",
     "superagent": "^1.6.1",
     "superagent-thunkify": "^1.0.1"

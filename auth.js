@@ -43,10 +43,15 @@ class WechatAuth extends EventEmitter {
    * @param  {Function} callback [description]
    * @return {[type]}            [description]
    */
-  throwError(err, callback){
-    debug(err);
+  throwError(msg, err){
+    if(err){
+      err.msg = msg;
+    }else{
+      err = new Error(msg);
+    }
+    // err.msg = msg;
     this.emit('error', err);
-    callback(err);
+    throw err;
   }
   /**
    * [handleResponse description]
@@ -56,15 +61,21 @@ class WechatAuth extends EventEmitter {
   handleResponse(callback){
     var self = this;
     return function(err, res){
-      if(err)       return self.throwError(new Error('[wechat] network error', err),                                               callback);
-      if(!res.ok)   return self.throwError(new Error('[wechat] server response status code is not ok ('   + res.statusCode + ')'), callback);
-      if(!res.body) return self.throwError(new Error('[wechat] can not parse body from server response: ' + res.text),             callback);
-      //
-      var errcode = res.body[ 'errcode' ];
-      var errmsg  = res.body[ 'errmsg'  ] || ERROR_CODES[ errcode ];
-      if(!!errcode) return self.throwError(new Error('[wechat] server receive an error: ' + errmsg), callback);
-      //
-      callback(null, res.body);
+      try{
+        if(err)       return self.throwError(`network error: ${err}`);
+        if(!res.ok)   return self.throwError(`server response status code is not ok (${res.statusCode})`);
+        if(!res.body) return self.throwError(`can not parse body from server response: ${res.text}`);
+        //
+        var errcode = res.body[ 'errcode' ];
+        var errmsg  = res.body[ 'errmsg'  ] || ERROR_CODES[ errcode ];
+        if(!!errcode) return self.throwError(new Error('[wechat] server receive an error: ' + errmsg), callback);
+        //
+        debug(res.body);
+        callback(null, res.body);
+      }catch(e){
+        debug(e);
+        callback(e);
+      }
     };
   }
   /**
