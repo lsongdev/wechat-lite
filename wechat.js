@@ -2,6 +2,7 @@
  * [Wechat client sdk]
  * @param {[type]} config [description]
  * @param {[type]} ready  [description]
+ * @docs http://mp.weixin.qq.com/wiki/7/aaa137b55fb2e0456bf8dd9148dd613f.html
  */
 function Wechat(config, ready){
 

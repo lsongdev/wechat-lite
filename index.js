@@ -68,7 +68,7 @@ class WechatAuth extends EventEmitter {
         //
         var errcode = res.body[ 'errcode' ];
         var errmsg  = res.body[ 'errmsg'  ] || ERROR_CODES[ errcode ];
-        if(!!errcode) return self.throwError(new Error('[wechat] server receive an error: ' + errmsg), callback);
+        if(!!errcode) return self.throwError(`server receive an error: ${errmsg}`);
         //
         debug(res.body);
         callback(null, res.body);
@@ -82,6 +82,7 @@ class WechatAuth extends EventEmitter {
    * [getToken description]
    * @param  {[type]} grantType [description]
    * @return {[type]}           [description]
+   * @docs http://mp.weixin.qq.com/wiki/11/0e4b294685f817b95cbed85ba5e82b8f.html
    */
   getToken(grantType){
     return this.promiseify(function(callback){
@@ -136,8 +137,33 @@ class WechatAuth extends EventEmitter {
         timestamp    : timestamp,
         url          : url
       });
-
     }
+  }
+  /**
+   * [checkSignature description]
+   * @param  {[type]} params    [description]
+   * @param  {[type]} signature [description]
+   * @return {[type]}           [description]
+   * @docs http://mp.weixin.qq.com/wiki/4/2ccadaef44fe1e4b0322355c2312bfa8.html
+   */
+  checkSignature(token, timestamp, nonce, signature, echostr){
+    var sha1 = crypto.createHash('sha1');
+    sha1.update([ token, timestamp, nonce ].sort().join(''));
+    return (sha1.digest('hex') == signature) && (echostr || true);
+  }
+  /**
+   * [getCallbackIP description]
+   * @param  {[type]} token [description]
+   * @return {[type]}       [description]
+   * @docs http://mp.weixin.qq.com/wiki/0/2ad4b6bfd29f30f71d39616c2a0fcedc.html
+   */
+  getCallbackIP(token){
+    return this.promiseify(function(callback){
+      request
+      .get(`${this.options.api}/getcallbackip`)
+      .query({ access_token: token })
+      .end(this.handleResponse(callback));
+    });
   }
 }
 

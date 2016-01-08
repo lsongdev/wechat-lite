@@ -14,31 +14,6 @@ var parseMsg = function(data){
   return data;
 };
 
-var checkSignature = function(token, req, res, callback){
-  req.verify = false;
-  var nonce   = req.query['nonce'];
-  var echostr = req.query['echostr'];
-  var signature = req.query['signature'];
-  var timestamp = req.query['timestamp'];
-  if(signature){
-    var sha1 = crypto.createHash('sha1');
-    var argArr = [ token, timestamp, nonce ].sort();
-    var argHash = sha1.update(argArr.join(''));
-    req.verify = argHash.digest('hex') == signature;
-    if(req.verify){
-      if(req.method == 'GET'){
-        res.send(echostr);
-      }else{
-        callback();
-      }
-    }else{
-      res.send(401);
-    }
-  }else{
-    res.status(500).send('arguments not found.');
-  }
-};
-
 var getReplyMsg = function(msg, type, message){
   var replyMsg = {
     FromUserName: msg['ToUserName'],
