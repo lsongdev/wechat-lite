@@ -19,7 +19,7 @@ class WechatAuth extends EventEmitter {
     this.options = {
       appId     : appId,
       appSecret : appSecret,
-      timeout   : 1000,
+      timeout   : 100,
       api       : 'https://api.weixin.qq.com/cgi-bin'
     };
   }

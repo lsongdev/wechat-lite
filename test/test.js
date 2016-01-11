@@ -52,6 +52,7 @@
 'use strict';
 const assert     = require('assert');
 const WechatAuth = require('../');
+const debug 		 = require('debug')('retry');
 
 function describe(msg, callback){
   try{
@@ -67,19 +68,36 @@ function describe(msg, callback){
 // let auth = new WechatAuth('wx98831d7cee9dc881', '34c487c0f12bdf000fab9f836215ada6');
 let auth = new WechatAuth('wx3828798966eb822d', '02668be0c63d2f3fd9ccaf7d0f69e71a');
 
-auth.on('error', function(err){
-  console.error(err);
-});
-//
-// auth.getToken().then(function(token){
-//   console.log(token);
-//   // auth.getCallbackIP(token.access_token).then(function(ips){
-//   //   console.log(ips);
-//   // });
+// auth.on('error', function(err){
+//   console.error(err);
 // });
-auth.getTicket('u7E_jABrNY-GkotCWdWYz4T-XHCog2YHi7YJe5LJJFttsnWYxE4vtR0u3nqsuu6O0_jAW5FwpNoo5HoUgxoVXEw8yZtXprmPa5363JOhc4QJGHiAIAYVW').then(function(token){
-  console.log(token);
+
+retry(auth.getToken(), [ 1000,2000,3000 ])
+.then(function(token){
+	console.log(token.access_token);
 });
+
+function retry(task, n, timeout){
+	var timeouts = [];
+	if(/array/i.test(({}).toString.call(n))){
+		timeouts = n;
+	}else{
+		while(n--) timeouts.push(timeout || 1000);
+	}
+	return new Promise(function(accept, reject){
+		(function fn(){
+			debug(timeouts);
+			task.then(accept, function(err){
+				if(timeouts.length){
+					setTimeout(fn, timeouts.shift());
+				} else reject(err);
+			});
+		})();
+	});
+}
+
+
+
 
 // describe('should be ok', function() {
 //
