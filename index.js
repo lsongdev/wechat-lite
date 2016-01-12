@@ -1,9 +1,10 @@
 'use strict';
 const crypto        = require('crypto');
 const EventEmitter  = require('events');
-const ERROR_CODES   = require('./errcode');
 const request       = require('superagent');
 const debug         = require('debug')('wechat');
+const ERROR_CODES   = require('./errcode');
+const promiseify    = require('./promiseify');
 /**
  * WechatAuth
  */
@@ -19,23 +20,9 @@ class WechatAuth extends EventEmitter {
     this.options = {
       appId     : appId,
       appSecret : appSecret,
-      timeout   : 100,
+      timeout   : 2000,
       api       : 'https://api.weixin.qq.com/cgi-bin'
     };
-  }
-  /**
-   * [promiseify description]
-   * @param  {[type]} creator [description]
-   * @return {[type]}         [description]
-   */
-  promiseify(creator){
-    var self = this;
-    return new Promise(function(accept, reject){
-      creator.call(self, function(err, res){
-        if(err) return reject(err);
-        accept(res);
-      });
-    });
   }
   /**
    * [throwError description]
@@ -85,16 +72,17 @@ class WechatAuth extends EventEmitter {
    * @docs http://mp.weixin.qq.com/wiki/11/0e4b294685f817b95cbed85ba5e82b8f.html
    */
   getToken(grantType){
-    return this.promiseify(function(callback){
+    var self = this;
+    return promiseify(function(callback){
       request
-      .get(`${this.options.api}/token`)
+      .get(`${self.options.api}/token`)
       .query({
-        appid     : this.options.appId     ,
-        secret    : this.options.appSecret ,
+        appid     : self.options.appId     ,
+        secret    : self.options.appSecret ,
         grant_type: grantType || 'client_credential'
       })
-      .timeout(this.options.timeout)
-      .end(this.handleResponse(callback));
+      .timeout(self.options.timeout)
+      .end(self.handleResponse(callback));
     });
   }
   /**
@@ -103,15 +91,16 @@ class WechatAuth extends EventEmitter {
    * @return {[type]}       [description]
    */
   getTicket(token){
-    return this.promiseify(function(callback){
+    var self = this;
+    return promiseify(function(callback){
       request
-      .get(`${this.options.api}/ticket/getticket`)
+      .get(`${self.options.api}/ticket/getticket`)
       .query({
         type         : 'jsapi',
         access_token : token
       })
-      .timeout(this.options.timeout)
-      .end(this.handleResponse(callback));
+      .timeout(self.options.timeout)
+      .end(self.handleResponse(callback));
     });
   }
   /**
@@ -158,7 +147,7 @@ class WechatAuth extends EventEmitter {
    * @docs http://mp.weixin.qq.com/wiki/0/2ad4b6bfd29f30f71d39616c2a0fcedc.html
    */
   getCallbackIP(token){
-    return this.promiseify(function(callback){
+    return promiseify(function(callback){
       request
       .get(`${this.options.api}/getcallbackip`)
       .query({ access_token: token })
