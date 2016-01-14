@@ -50,8 +50,8 @@
 // 	console.log("server is running at %s", server.address().port);
 // });
 'use strict';
-const assert     = require('assert');
-const WechatAuth = require('../');
+const assert = require('assert');
+const Wechat = require('../');
 
 function describe(msg, callback){
   try{
@@ -62,25 +62,45 @@ function describe(msg, callback){
   };
 }
 
-//let auth = new WechatAuth('wx4a744663c8031c70', 'd4f69849391b8452c78a60607bd63da7');
-// let auth = new WechatAuth('wx779ea5a9af3d5d09', 'ea6eea9459b57da58dbc673d1f52c4df');
-// let auth = new WechatAuth('wx98831d7cee9dc881', '34c487c0f12bdf000fab9f836215ada6');
-let auth = new WechatAuth(
+//let auth = new Wechat('wx4a744663c8031c70', 'd4f69849391b8452c78a60607bd63da7');
+// let auth = new Wechat('wx779ea5a9af3d5d09', 'ea6eea9459b57da58dbc673d1f52c4df');
+// let auth = new Wechat('wx98831d7cee9dc881', '34c487c0f12bdf000fab9f836215ada6');
+let wx = new Wechat(
   'wx3828798966eb822d',
   '02668be0c63d2f3fd9ccaf7d0f69e71a'
 );
 
-auth.on('error', function(err){
+
+wx.getUUID().then(function(info){
+  var uuid = info[ 'QRLogin.uuid' ];
+  console.log( wx.qrcode(uuid) );
+  setInterval(function(){
+    wx.status(uuid).then(function(status){
+      switch(status.code){
+        case '201':
+          console.log('scaned')
+          break
+        case '200':
+          wx.login(status.redirect_uri);
+          break;
+      }
+    });
+  }, 3000);
+}).catch(function(err){
   console.error(err);
 });
 
-auth.getToken().then(function(token){
-  console.log(token.access_token);
-});
+// auth.on('error', function(err){
+//   console.error(err);
+// });
 
-//
-describe('should be ok', function() {
+// auth.getToken().then(function(token){
+//   console.log(token.access_token);
+// });
 
-  assert.equal(auth.checkSignature('token', 1, 'xxx', '369e1a9cba84ca172e7abfc9de031d96f64862af', 'ok'), 'o');
+// //
+// describe('should be ok', function() {
 
-});
+//   assert.equal(auth.checkSignature('token', 1, 'xxx', '369e1a9cba84ca172e7abfc9de031d96f64862af', 'ok'), 'o');
+
+// });

@@ -1,4 +1,5 @@
 'use strict';
+const https         = require('https');
 const crypto        = require('crypto');
 const EventEmitter  = require('events');
 const request       = require('superagent');
@@ -24,6 +25,10 @@ class WechatAuth extends EventEmitter {
       api       : 'https://api.weixin.qq.com/cgi-bin'
     };
   }
+  // request(u, data, headers){
+  //   var parsed = url.parse(u, null, null, {decodeURIComponent: decodeURIComponent});
+  //   var method = !!data ? 'POST' : 'GET'
+  // }
   /**
    * [throwError description]
    * @param  {[type]}   err      [description]
@@ -153,6 +158,68 @@ class WechatAuth extends EventEmitter {
       .query({ access_token: token })
       .end(this.handleResponse(callback));
     });
+  }
+  parseJS(input){
+    var obj = {};
+    input
+    .split(';')
+    .filter(function(item){
+      return !!item.trim();
+    })
+    .map(function(item){
+      return item
+        .replace('=', '$')
+        .replace(/"/g, '')
+        .replace('window.', '')
+        .split('$')
+        .map(function(k){
+          return k.trim()
+        })
+    })
+    .forEach(function(item){
+      obj[ item[0] ] = item[1]
+    });
+    return obj;
+  }
+  getUUID(){
+    var self = this;
+    return new Promise(function(accept, reject){
+      var buffer = [];
+      var req = https.get('https://login.weixin.qq.com/jslogin?appid=wx782c26e4c19acffb', function(res){
+        res.on('data', function(chunk){
+          buffer.push(chunk);
+        })
+        .on('end', function(){
+          accept(self.parseJS(buffer.join('')));
+        })
+        .on('error', reject);
+      })
+      .on('error', reject)
+      .end();
+    });
+  }
+  qrcode(uuid){
+    return [ 'https://login.weixin.qq.com/qrcode', uuid ].join('/');
+  }
+  status(uuid){
+    var self = this;
+    return new Promise(function(accept, reject){
+      var buffer = [];
+      https.get('https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?uuid=$uuid&tip=1'.replace('$uuid', uuid), function(res){
+        res.on('data', function(chunk){
+          buffer.push(chunk);
+        }).on('end', function(){
+          accept(self.parseJS(buffer.join('')));
+        }).on('error', reject);
+      }).on('error', reject);
+    });
+  }
+  login(u){
+    // var u = 'https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage?uuid=$uuid&ticket=$ticket'.replace('$uuid', uuid).replace('$ticket', ticket)
+    // console.log(u);
+    https.get(u, function(res){
+      console.log(res.headers['set-cookie']);
+    })
   }
 }
 
