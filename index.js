@@ -1,6 +1,9 @@
 'use strict';
+const http          = require('http');
+const https         = require('https');
 const crypto        = require('crypto');
 const EventEmitter  = require('events');
+const url           = require('url');
 const qs            = require('querystring');
 const request       = require('superagent');
 const debug         = require('debug')('wechat');
@@ -24,6 +27,23 @@ class WechatAuth extends EventEmitter {
       timeout   : 2000
     };
   }
+  cookie(cookies){
+    return Object.keys(cookies).map(function(key){
+      return [ key, cookies[ key ] ].join('=');
+    }).join('; ');
+  }
+  read(res, callback){
+    var buffer = [];
+    res.on('data', function(chunk){
+      buffer.push(chunk);
+    }).on('end', function(){
+      callback(null, buffer.join(''));
+    }).on('error', callback);
+  }
+  // request(u, data, headers){
+  //   var parsed = url.parse(u, null, null, {decodeURIComponent: decodeURIComponent});
+  //   var method = !!data ? 'POST' : 'GET'
+  // }
   /**
    * [throwError description]
    * @param  {[type]}   err      [description]
@@ -206,6 +226,226 @@ class WechatAuth extends EventEmitter {
     });
     return [ api, '?' ,querystring ,'#wechat_redirect' ].join('');
   }
+  parseJS(input){
+    var obj = {};
+    input
+    .split(';')
+    .filter(function(item){
+      return !!item.trim();
+    })
+    .map(function(item){
+      return item
+        .replace('=', '$')
+        .replace(/"/g, '')
+        .replace('window.', '')
+        .split('$')
+        .map(function(k){
+          return k.trim()
+        })
+    })
+    .forEach(function(item){
+      obj[ item[0] ] = item[1]
+    });
+    return obj;
+  }
+  getUUID(){
+    var self = this;
+    return new Promise(function(accept, reject){
+      var buffer = [];
+      var req = https.get('https://login.weixin.qq.com/jslogin?appid=wx782c26e4c19acffb', function(res){
+        self.read(res, function(err, text){
+          accept(self.parseJS(text)['QRLogin.uuid']);
+        });
+      })
+      .on('error', reject)
+      .end();
+    });
+  }
+  qrcode(uuid){
+    return [ 'https://login.weixin.qq.com/qrcode', uuid ].join('/');
+  }
+  status(uuid){
+    var self = this;
+    return new Promise(function(accept, reject){
+      https.get('https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?uuid=' + uuid, function(res){
+        self.read(res, function(err, text){
+          if(err) return reject(err);
+          accept(self.parseJS(text));
+        });
+      }).on('error', reject);
+    });
+  }
+  getLoginInfo(ticket, uuid){
+    var u = 'https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage?uuid=$uuid&ticket=$ticket'.replace('$uuid', uuid).replace('$ticket', ticket)
+    return new Promise(function(accept, reject){
+      https.get(u, function(res){
+        var o = {};
+        res.headers['set-cookie'].filter(function(item){
+          return /wxuin|wxsid|webwx_data_ticket/.test(item);
+        }).map(function(item){
+          return item.split(';')[0].split('=');
+        }).map(function(item){
+          o[ item[0] ] = item[1];
+        })
+        accept(o);
+      })
+    });
+  }
+  login(uin, sid, ticket){
+    var self = this;
+    return new Promise(function(accept, reject){
+      var data = JSON.stringify({
+        "BaseRequest": {
+          "Uin": uin,
+          "Sid": sid,
+          "Skey":"",
+          "DeviceID":"e540201223688200"
+        }
+      });
+
+      var req = http.request({
+        hostname: 'wx.qq.com',
+        method  : 'post'  ,
+        path    : '/cgi-bin/mmwebwx-bin/webwxinit',
+        headers : {
+          'Content-Length': data.length,
+          Cookie: self.cookie({
+            wxuin: uin,
+            wxsid: sid,
+            webwx_data_ticket: ticket
+          })
+        }
+      }, function(res){
+        self.read(res, function(err, text){
+          accept(JSON.parse(text));
+        })
+      })
+      req.on('error', reject);
+      req.write(data)
+      req.end()
+    });
+  }
+
+  getContacts(uin, sid, ticket){
+    var self = this;
+    return new Promise(function(accept, reject){
+      var req = https.request({
+        hostname: 'wx.qq.com',
+        path: '/cgi-bin/mmwebwx-bin/webwxgetcontact',
+        headers: {
+          Cookie: self.cookie({
+            wxuin: uin,
+            wxsid: sid,
+            webwx_data_ticket: ticket
+          })
+        }
+      }, function(res){
+        self.read(res, function(err, text){
+          accept(JSON.parse(text));
+        })
+      });
+      req.end();
+    });
+  }
+
+  keepalive(uin, sid, ticket,  syncKey, skey, deviceid){
+    var self = this;
+    https.request({
+      hostname: 'webpush.weixin.qq.com',
+      headers: {
+        Cookie: self.cookie({ webwx_data_ticket: ticket })
+      },
+      path: [ '/cgi-bin/mmwebwx-bin/synccheck',  qs.stringify({
+        sid     : sid     ,
+        uin     : uin     ,
+        skey    : skey || '',
+        deviceid: deviceid || ~~new Date,
+        synckey : syncKey.List.map(function(item){
+          return [ item.Key, item.Val ].join('_')
+        }).join('|')
+      }) ].join('?')
+    }, function(res){
+      self.read(res, function(err, text){
+        console.log(self.parseJS(text));
+      });
+    }).end();
+  }
+
+  fetchMessage(uin, sid, ticket, syncKey, deviceId){
+    var self = this;
+    var data = JSON.stringify({
+      "BaseRequest":{
+        "Uin":uin,
+        "Sid":sid,
+        "Skey":"",
+        "DeviceID": ~~new Date
+      },
+      "SyncKey": syncKey
+    });
+    return new Promise(function(accept, reject){
+      var req = https.request({
+        method: 'post',
+        hostname: 'wx.qq.com',
+        path: '/cgi-bin/mmwebwx-bin/webwxsync',
+        headers: {
+          'Content-Length': data.length,
+          Cookie: self.cookie({
+            wxuin: uin,
+            wxsid: sid,
+            webwx_data_ticket: ticket
+          })
+        }
+      }, function(res){
+        self.read(res, function(err, text){
+          accept(JSON.parse(text));
+        })
+      });
+      req.write(data);
+      req.end();
+    });
+  }
+
+  sendMessage(uin, sid, ticket, from, to, msg){
+    var self = this;
+    var data = JSON.stringify({
+      "BaseRequest":{
+        "Uin":uin,
+        "Sid":sid,
+        "Skey":"",
+        "DeviceID": ~~new Date
+      },
+      "Msg" : {
+        "LocalID" : ~~new Date,
+        "ClientMsgId" : ~~new Date,
+       "Content" : msg,
+       "FromUserName" : from,
+       "ToUserName" : to,
+       "Type" : 1
+     }
+    });
+    return new Promise(function(accept, reject){
+      var req = https.request({
+        method: 'post',
+        hostname: 'wx.qq.com',
+        path: '/cgi-bin/mmwebwx-bin/webwxsendmsg',
+        headers: {
+          'Content-Length': data.length,
+          Cookie: self.cookie({
+            wxuin: uin,
+            wxsid: sid,
+            webwx_data_ticket: ticket
+          })
+        }
+      }, function(res){
+        self.read(res, function(err, text){
+          accept(JSON.parse(text));
+        })
+      });
+      req.write(data);
+      req.end();
+    });
+  }
+
 }
 
 module.exports = WechatAuth;
