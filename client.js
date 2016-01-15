@@ -32,12 +32,8 @@ Wechat.filter = function(src, fields){
 
 Wechat.merge = function(a, b){
   var obj = {}, key;
-  for(key in a){
-    obj[key] = a[key];
-  };
-  for(key in b){
-    obj[key] = b[key];
-  };
+  for(key in a) obj[key] = a[key];
+  for(key in b) obj[key] = b[key];
   return obj;
 };
 

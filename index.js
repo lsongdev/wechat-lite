@@ -1,6 +1,7 @@
 'use strict';
 const crypto        = require('crypto');
 const EventEmitter  = require('events');
+const qs            = require('querystring');
 const request       = require('superagent');
 const debug         = require('debug')('wechat');
 const ERROR_CODES   = require('./errcode');
@@ -20,8 +21,7 @@ class WechatAuth extends EventEmitter {
     this.options = {
       appId     : appId,
       appSecret : appSecret,
-      timeout   : 2000,
-      api       : 'https://api.weixin.qq.com/cgi-bin'
+      timeout   : 2000
     };
   }
   /**
@@ -51,7 +51,8 @@ class WechatAuth extends EventEmitter {
       try{
         if(err)       return self.throwError(`network error: ${err}`);
         if(!res.ok)   return self.throwError(`server response status code is not ok (${res.statusCode})`);
-        if(!res.body) return self.throwError(`can not parse body from server response: ${res.text}`);
+        if(Object.keys(res.body)) res.body = JSON.parse(res.text);
+          // return self.throwError(`can not parse body from server response: ${res.text}`);
         //
         var errcode = res.body[ 'errcode' ];
         var errmsg  = res.body[ 'errmsg'  ] || ERROR_CODES[ errcode ];
@@ -75,7 +76,7 @@ class WechatAuth extends EventEmitter {
     var self = this;
     return promiseify(function(callback){
       request
-      .get(`${self.options.api}/token`)
+      .get(`https://api.weixin.qq.com/cgi-bin/token`)
       .query({
         appid     : self.options.appId     ,
         secret    : self.options.appSecret ,
@@ -94,7 +95,7 @@ class WechatAuth extends EventEmitter {
     var self = this;
     return promiseify(function(callback){
       request
-      .get(`${self.options.api}/ticket/getticket`)
+      .get(`https://api.weixin.qq.com/cgi-bin/ticket/getticket`)
       .query({
         type         : 'jsapi',
         access_token : token
@@ -147,12 +148,63 @@ class WechatAuth extends EventEmitter {
    * @docs http://mp.weixin.qq.com/wiki/0/2ad4b6bfd29f30f71d39616c2a0fcedc.html
    */
   getCallbackIP(token){
+    var self = this;
     return promiseify(function(callback){
       request
       .get(`${this.options.api}/getcallbackip`)
       .query({ access_token: token })
-      .end(this.handleResponse(callback));
+      .end(self.handleResponse(callback));
     });
+  }
+  /**
+   * [getAuthorizeToken description]
+   * @param  {[type]} code [description]
+   * @return {[type]}      [description]
+   * @docs https://mp.weixin.qq.com/wiki/17/c0f37d5704f0b64713d5d2c37b468d75.html
+   */
+  getAuthorizeToken(code){
+    var self = this;
+    return promiseify(function(callback){
+      request
+      .get('https://api.weixin.qq.com/sns/oauth2/access_token')
+      .query({
+        appid : self.options.appId,
+        secret: self.options.appSecret,
+        code  : code,
+        grant_type: 'authorization_code'
+      })
+      .end(self.handleResponse(callback));
+    });
+  }
+  checkAuthorizeToken(){
+    //https://api.weixin.qq.com/sns/auth?access_token=ACCESS_TOKEN&openid=OPENID
+  }
+  refreshAuthorizeToken(){
+    //https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=APPID&grant_type=refresh_token&refresh_token=REFRESH_TOKEN
+  }
+  getUser(token, openId, language){
+    var self = this;
+    return promiseify(function(callback){
+      request
+      .get('https://api.weixin.qq.com/sns/userinfo')
+      .query({
+        access_token  : token ,
+        openid        : openId,
+        lang          : language || 'zh_CN'
+      })
+      .end(self.handleResponse(callback));
+    });
+  }
+  getAuthorizeURL(callbackURL, scope, state){
+    var api = 'https://open.weixin.qq.com/connect/oauth2/authorize';
+    var querystring = qs.stringify({
+      appid         : this.options.appId  ,
+      redirect_uri  : callbackURL         ,
+      response_type : 'code'              ,
+      scope         : scope               ,
+      state         : state
+    });
+    return [ api, '?' ,querystring ,'#wechat_redirect' ].join('');
   }
 }
 
