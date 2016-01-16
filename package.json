@@ -24,7 +24,8 @@
   "dependencies": {
     "debug": "*",
     "jstoxml": "*",
-    "superagent": "*"
+    "superagent": "*",
+    "xml2js": "^0.4.16"
   },
   "directories": {
     "test": "test"

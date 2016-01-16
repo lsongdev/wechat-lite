@@ -9,28 +9,27 @@ const request       = require('superagent');
 const debug         = require('debug')('wechat');
 const ERROR_CODES   = require('./errcode');
 const promiseify    = require('./promiseify');
+const R             = require('./request');
+const xml2js       = require('xml2js');
 /**
  * WechatAuth
  */
-class WechatAuth extends EventEmitter {
+class WeChat extends EventEmitter {
   /**
    * [constructor description]
    * @param  {[type]} appId     [description]
    * @param  {[type]} appSecret [description]
    * @return {[type]}           [description]
    */
-  constructor(appId, appSecret){
+  constructor(options){
     super();
-    this.options = {
-      appId     : appId,
-      appSecret : appSecret,
+    var defaults = {
       timeout   : 2000
     };
-  }
-  cookie(cookies){
-    return Object.keys(cookies).map(function(key){
-      return [ key, cookies[ key ] ].join('=');
-    }).join('; ');
+    for(var key in options){
+      defaults[ key ] = options[ key ];
+    }
+    this.options = defaults;
   }
   read(res, callback){
     var buffer = [];
@@ -250,15 +249,14 @@ class WechatAuth extends EventEmitter {
   }
   getUUID(){
     var self = this;
-    return new Promise(function(accept, reject){
-      var buffer = [];
-      var req = https.get('https://login.weixin.qq.com/jslogin?appid=wx782c26e4c19acffb', function(res){
-        self.read(res, function(err, text){
-          accept(self.parseJS(text)['QRLogin.uuid']);
-        });
-      })
-      .on('error', reject)
-      .end();
+    return new R()
+    .get('https://login.weixin.qq.com/jslogin')
+    .query({ appid: this.options.appId })
+    .end().then(function(res){
+      var o = self.parseJS(res.text);
+      if(parseInt(o[ 'QRLogin.code' ]) == 200)
+        return o[ 'QRLogin.uuid' ];
+      throw new Error('can not request uuid for now');
     });
   }
   qrcode(uuid){
@@ -266,186 +264,349 @@ class WechatAuth extends EventEmitter {
   }
   status(uuid){
     var self = this;
-    return new Promise(function(accept, reject){
-      https.get('https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?uuid=' + uuid, function(res){
-        self.read(res, function(err, text){
-          if(err) return reject(err);
-          accept(self.parseJS(text));
-        });
-      }).on('error', reject);
-    });
+    return new R()
+    .get('https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login')
+    .query({'uuid': uuid})
+    .end().then(function(res){
+      return self.parseJS(res.text);
+    })
   }
-  getLoginInfo(ticket, uuid){
-    var u = 'https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage?uuid=$uuid&ticket=$ticket'.replace('$uuid', uuid).replace('$ticket', ticket)
-    return new Promise(function(accept, reject){
-      https.get(u, function(res){
-        var o = {};
-        res.headers['set-cookie'].filter(function(item){
-          return /wxuin|wxsid|webwx_data_ticket/.test(item);
-        }).map(function(item){
-          return item.split(';')[0].split('=');
-        }).map(function(item){
-          o[ item[0] ] = item[1];
-        })
-        accept(o);
-      })
-    });
-  }
-  login(uin, sid, ticket){
-    var self = this;
-    return new Promise(function(accept, reject){
-      var data = JSON.stringify({
-        "BaseRequest": {
-          "Uin": uin,
-          "Sid": sid,
-          "Skey":"",
-          "DeviceID":"e540201223688200"
-        }
+  /**
+   * [login description]
+   * @param  {[type]} uuid   [description]
+   * @param  {[type]} ticket [description]
+   * @return {[type]}        [description]
+   */
+  login(uuid, ticket){
+    return new R()
+    .get('https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage')
+    .query('uuid'  , uuid)
+    .query('ticket', ticket)
+    .end().then(function(res){
+      var data = {};
+      res.headers['set-cookie'].filter(function(cookie){
+        return /wxuin|wxsid|webwx_data_ticket/.test(cookie);
+      }).map(function(cookie){
+        return cookie.split(';')[0].split('=');
+      }).forEach(function(item){
+        data[ item[0] ] = item[1];
       });
-
-      var req = http.request({
-        hostname: 'wx.qq.com',
-        method  : 'post'  ,
-        path    : '/cgi-bin/mmwebwx-bin/webwxinit',
-        headers : {
-          'Content-Length': data.length,
-          Cookie: self.cookie({
-            wxuin: uin,
-            wxsid: sid,
-            webwx_data_ticket: ticket
-          })
-        }
-      }, function(res){
-        self.read(res, function(err, text){
-          accept(JSON.parse(text));
-        })
-      })
-      req.on('error', reject);
-      req.write(data)
-      req.end()
+      return data;
     });
   }
-
-  getContacts(uin, sid, ticket){
-    var self = this;
-    return new Promise(function(accept, reject){
-      var req = https.request({
-        hostname: 'wx.qq.com',
-        path: '/cgi-bin/mmwebwx-bin/webwxgetcontact',
-        headers: {
-          Cookie: self.cookie({
-            wxuin: uin,
-            wxsid: sid,
-            webwx_data_ticket: ticket
-          })
-        }
-      }, function(res){
-        self.read(res, function(err, text){
-          accept(JSON.parse(text));
-        })
-      });
-      req.end();
-    });
-  }
-
-  keepalive(uin, sid, ticket,  syncKey, skey, deviceid){
-    var self = this;
-    https.request({
-      hostname: 'webpush.weixin.qq.com',
-      headers: {
-        Cookie: self.cookie({ webwx_data_ticket: ticket })
-      },
-      path: [ '/cgi-bin/mmwebwx-bin/synccheck',  qs.stringify({
-        sid     : sid     ,
-        uin     : uin     ,
-        skey    : skey || '',
-        deviceid: deviceid || ~~new Date,
-        synckey : syncKey.List.map(function(item){
-          return [ item.Key, item.Val ].join('_')
-        }).join('|')
-      }) ].join('?')
-    }, function(res){
-      self.read(res, function(err, text){
-        console.log(self.parseJS(text));
-      });
-    }).end();
-  }
-
-  fetchMessage(uin, sid, ticket, syncKey, deviceId){
-    var self = this;
-    var data = JSON.stringify({
-      "BaseRequest":{
-        "Uin":uin,
-        "Sid":sid,
-        "Skey":"",
-        "DeviceID": ~~new Date
-      },
-      "SyncKey": syncKey
-    });
-    return new Promise(function(accept, reject){
-      var req = https.request({
-        method: 'post',
-        hostname: 'wx.qq.com',
-        path: '/cgi-bin/mmwebwx-bin/webwxsync',
-        headers: {
-          'Content-Length': data.length,
-          Cookie: self.cookie({
-            wxuin: uin,
-            wxsid: sid,
-            webwx_data_ticket: ticket
-          })
-        }
-      }, function(res){
-        self.read(res, function(err, text){
-          accept(JSON.parse(text));
-        })
-      });
-      req.write(data);
-      req.end();
-    });
-  }
-
-  sendMessage(uin, sid, ticket, from, to, msg){
-    var self = this;
-    var data = JSON.stringify({
-      "BaseRequest":{
-        "Uin":uin,
-        "Sid":sid,
-        "Skey":"",
-        "DeviceID": ~~new Date
-      },
-      "Msg" : {
-        "LocalID" : ~~new Date,
-        "ClientMsgId" : ~~new Date,
-       "Content" : msg,
-       "FromUserName" : from,
-       "ToUserName" : to,
-       "Type" : 1
-     }
-    });
-    return new Promise(function(accept, reject){
-      var req = https.request({
-        method: 'post',
-        hostname: 'wx.qq.com',
-        path: '/cgi-bin/mmwebwx-bin/webwxsendmsg',
-        headers: {
-          'Content-Length': data.length,
-          Cookie: self.cookie({
-            wxuin: uin,
-            wxsid: sid,
-            webwx_data_ticket: ticket
-          })
-        }
-      }, function(res){
-        self.read(res, function(err, text){
-          accept(JSON.parse(text));
-        })
-      });
-      req.write(data);
-      req.end();
-    });
-  }
-
 }
 
-module.exports = WechatAuth;
+/**
+ * [Client description]
+ * @type {[type]}
+ */
+WeChat.Client = class WeChatClient extends EventEmitter {
+  constructor(options){
+    super();
+    this.options  = options;
+    this.uin      = options.wxuin;
+    this.sid      = options.wxsid;
+    this.ticket   = options.webwx_data_ticket;
+    this.deviceId = [ 'e', +new Date ].join('');
+  }
+  /**
+   * [BaseRequest description]
+   */
+  get BaseRequest(){
+    return {
+      Uin      : this.uin   ,
+      Sid      : this.sid   ,
+      Skey     : '' ,
+      DeviceID : this.deviceId
+    };
+  }
+  /**
+   * [init description]
+   * @param  {Function} callback [description]
+   * @return {[type]}            [description]
+   */
+  init(){
+    var self = this;
+    return new R()
+    .post('https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxinit')
+    .cookie(this.options)
+    .send({ BaseRequest: this.BaseRequest })
+    .end().then(function(res){
+      var d = JSON.parse(res.text);
+      self.User    = d.User;
+      self.SyncKey = d.SyncKey;
+      self.emit(WeChat.Client.EVENTS.READY, d);
+      return d;
+    });
+  }
+  /**
+   * [getContacts description]
+   * @return {[type]} [description]
+   */
+  contacts(){
+    var self = this;
+    return new R()
+    .get('https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact')
+    .cookie(this.options)
+    .end().then(function(res){
+      var d = JSON.parse(res.text);
+      self.Contacts = d.MemberList;
+      self.emit(WeChat.Client.EVENTS.CONTACTS, d);
+      return d;
+    });
+  }
+  /**
+   * [keepalive description]
+   * @return {[type]} [description]
+   */
+  check(){
+    var self = this;
+    function lowercase(d){
+      var o = {};
+      for(var k in d) o[ k.toLowerCase() ] = d[k];
+      return o;
+    }
+    return new R()
+    .get('https://webpush.weixin.qq.com/cgi-bin/mmwebwx-bin/synccheck')
+    .cookie(this.options)
+    .query(Object.assign(lowercase(this.BaseRequest), {
+      synckey: this.SyncKey.List.map(function(item){
+        return [ item.Key, item.Val ].join('_')
+      }).join('|')
+    }))
+    .end().then(function(res){
+      var d = res.text.split('=');
+      if(d.length == 2){
+        var v = d[1];
+        v = v.replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ');
+        return JSON.parse(v);
+      }
+    });
+  }
+
+  /**
+   * [send description]
+   * @param  {[type]} msg [description]
+   * @param  {[type]} to  [description]
+   * @return {[type]}     [description]
+   */
+  send(msg, to){
+    new R()
+    .post('https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxsendmsg')
+    .cookie(this.options)
+    .send({
+      Msg : {
+        Type        : 1,
+        Content     : msg,
+        FromUserName: this.User.UserName,
+        ToUserName  : to || this.User.UserName,
+        LocalID     : ~~new Date,
+        ClientMsgId : ~~new Date
+      },
+      BaseRequest: this.BaseRequest
+    })
+    .end().then(function(res){
+      return JSON.parse(res.text);
+    });
+  }
+  /**
+   * [sync description]
+   * @return {[type]} [description]
+   */
+  sync(){
+    var self = this;
+    return new R()
+    .post('https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxsync')
+    .cookie(this.options)
+    .send({
+      SyncKey     : this.SyncKey,
+      BaseRequest : this.BaseRequest
+    })
+    .end().then(function(res){
+      var d = JSON.parse(res.text);
+      self.SyncKey = d.SyncKey; // sync
+      return d;
+    });
+  }
+};
+
+
+WeChat.Client.EVENTS = {
+  READY     : 'ready',
+  CONTACTS  : 'contacts'
+};
+
+WeChat.Client.VERIFY_FLAG = {
+  USER: 0,
+  OFFICIAL: 24,
+  GUANFANG: 56
+};
+
+WeChat.Client.MSG_TYPE = {
+  TEXT: 1,
+  IMAGE: 3,
+  VOICE: 34,
+  VIDEO: 43,
+  MICRO_VIDEO: 62,
+  EMOTICON: 47,
+  APP: 49,
+  VOIP_MSG: 50,
+  VOIP_NOTIFY: 52,
+  VOIP_INVITE: 53,
+  LOCATION: 48,
+  STATUS_NOTIFY: 51,
+  SYSNOTICE: 9999,
+  POSSIBLE_FRIEND_MSG: 40,
+  VERIFY_MSG: 37,
+  SHARE_CARD: 42,
+  SYS     : 10000,
+  RECALLED: 10002,
+};
+
+WeChat.Client.CONTACT_FLAG = {
+  CONTACT: 1,
+  CHATCONTACT: 2,
+  SUBSCRIBE: 3,
+  CHATROOMCONTACT: 4,
+  BLACKLISTCONTACT: 8,
+  DOMAINCONTACT: 16,
+  HIDECONTACT: 32,
+  FAVOURCONTACT: 64,
+  SNSBLACKLISTCONTACT: 256,
+  NOTIFYCLOSECONTACT: 512,
+  TOPCONTACT: 2048,
+};
+
+WeChat.Client.PROFILE_BITFLAG = {
+  NOCHANGE: 0,
+  CHANGE: 190,
+};
+
+WeChat.Client.STATUS_NOTIFY_CODE = {
+  READED: 1,
+  ENTER_SESSION: 2,
+  INITED: 3,
+  SYNC_CONV: 4,
+  QUIT_SESSION: 5,
+};
+
+WeChat.Client.CHAT_ROOM_NOTIFY = {
+  OPEN: 1,
+  CLOSE: 0,
+};
+
+WeChat.Client.SEX = {
+  MALE: 1,
+  FEMALE: 2,
+};
+
+WeChat.SuperClient = class SuperClient extends EventEmitter {
+  constructor(appId){
+    super();
+    var self = this;
+    this.wx = new WeChat({ appId: appId });
+  }
+  uuid(){
+    return this.wx.getUUID();
+  }
+  qrcode(uuid){
+    var link = this.wx.qrcode(uuid);
+    console.log(link);
+    return link.split('/').splice(-1)[0];
+  }
+  waitingForScan(uuid){
+    var self = this;
+    return new Promise(function(accept, reject){
+      (function wait(){
+        self.wx.status(uuid).then(function(status){
+          switch(parseInt(status.code, 10)){
+            case 200:
+              accept(qs.parse(url.parse(status.redirect_uri).query))
+              break;
+            case 201:
+              console.log('scan qrcode success, waiting for login.');
+            default:
+              setTimeout(wait, 1000);
+              break;
+          }
+        }, reject);
+      })();
+    });
+  }
+  login(data){
+    return this.wx.login(data.uuid, data.ticket);
+  }
+  init(data){
+    this.client = new WeChat.Client(data);
+    return this.client.init();
+  }
+  contacts(){
+    return this.client.contacts();
+  }
+  loop(){
+    var self = this;
+    (function loop(){
+      self.client.check().then(function(s){
+        switch(parseInt(s.retcode, 10)){
+          case 0:
+            break;
+          case 1100:
+            console.error('sign out', s.retcode);
+            break;
+          default:
+            console.error('sync check failed', s.retcode);
+            break;
+        }
+        switch (parseInt(s.selector, 10)) {
+          case 0:
+            break;
+          case 2:
+            self.client.sync().then(function(d){
+              self.processMessage(d.AddMsgList)
+            });
+            break;
+          default:
+            break;
+        }
+        setTimeout(loop, 100);
+      });
+    })();
+  }
+  processMessage(msgs){
+    var self = this;
+    msgs.forEach(function(msg){
+
+      var msgType = Object.keys(WeChat.Client.MSG_TYPE).filter(function(type){
+        return WeChat.Client.MSG_TYPE[ type ] == msg.MsgType;
+      })[0];
+
+      switch(parseInt(msg.MsgType, 10)){
+        case WeChat.Client.MSG_TYPE.TEXT:
+          console.log('%s > %s: %s', msgType, msg.FromUserName, msg.Content);
+          break;
+        case WeChat.Client.MSG_TYPE.STATUS_NOTIFY:
+          self.processStatusNotify(msg);
+          break;
+      }
+
+    });
+  }
+  processStatusNotify(msg){
+    switch(parseInt(msg.StatusNotifyCode, 10)){
+      case WeChat.Client.STATUS_NOTIFY_CODE.SYNC_CONV:
+        console.log(msg.StatusNotifyUserName.split(','));
+        break;
+      case WeChat.Client.STATUS_NOTIFY_CODE.ENTER_SESSION:
+        console.log('ENTER_SESSION');
+        break;
+      case WeChat.Client.STATUS_NOTIFY_CODE.QUIT_SESSION:
+        console.log('QUIT_SESSION');
+        break;
+      default:
+        console.log(msg.StatusNotifyCode);
+        break;
+    }
+  }
+}
+
+module.exports = WeChat;
