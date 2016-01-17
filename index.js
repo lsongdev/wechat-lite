@@ -10,9 +10,8 @@ const debug         = require('debug')('wechat');
 const ERROR_CODES   = require('./errcode');
 const promiseify    = require('./promiseify');
 const R             = require('./request');
-const xml2js       = require('xml2js');
 /**
- * WechatAuth
+ * Wechat
  */
 class WeChat extends EventEmitter {
   /**
@@ -31,18 +30,6 @@ class WeChat extends EventEmitter {
     }
     this.options = defaults;
   }
-  read(res, callback){
-    var buffer = [];
-    res.on('data', function(chunk){
-      buffer.push(chunk);
-    }).on('end', function(){
-      callback(null, buffer.join(''));
-    }).on('error', callback);
-  }
-  // request(u, data, headers){
-  //   var parsed = url.parse(u, null, null, {decodeURIComponent: decodeURIComponent});
-  //   var method = !!data ? 'POST' : 'GET'
-  // }
   /**
    * [throwError description]
    * @param  {[type]}   err      [description]
@@ -72,7 +59,6 @@ class WeChat extends EventEmitter {
         if(!res.ok)   return self.throwError(`server response status code is not ok (${res.statusCode})`);
         if(Object.keys(res.body)) res.body = JSON.parse(res.text);
           // return self.throwError(`can not parse body from server response: ${res.text}`);
-        //
         var errcode = res.body[ 'errcode' ];
         var errmsg  = res.body[ 'errmsg'  ] || ERROR_CODES[ errcode ];
         if(!!errcode) return self.throwError(`server receive an error: ${errmsg}`);
@@ -335,6 +321,7 @@ WeChat.Client = class WeChatClient extends EventEmitter {
       var d = JSON.parse(res.text);
       self.User    = d.User;
       self.SyncKey = d.SyncKey;
+      self.ChatSet = d.ChatSet;
       self.emit(WeChat.Client.EVENTS.READY, d);
       return d;
     });
@@ -350,11 +337,15 @@ WeChat.Client = class WeChatClient extends EventEmitter {
     .cookie(this.options)
     .end().then(function(res){
       var d = JSON.parse(res.text);
-      self.Contacts = d.MemberList;
       self.emit(WeChat.Client.EVENTS.CONTACTS, d);
       return d;
     });
   }
+
+  batchContacts(){
+
+  }
+
   /**
    * [keepalive description]
    * @return {[type]} [description]
@@ -488,6 +479,7 @@ WeChat.Client.STATUS_NOTIFY_CODE = {
   INITED: 3,
   SYNC_CONV: 4,
   QUIT_SESSION: 5,
+  MOMENTS: 9
 };
 
 WeChat.Client.CHAT_ROOM_NOTIFY = {
@@ -510,9 +502,8 @@ WeChat.SuperClient = class SuperClient extends EventEmitter {
     return this.wx.getUUID();
   }
   qrcode(uuid){
-    var link = this.wx.qrcode(uuid);
-    console.log(link);
-    return link.split('/').splice(-1)[0];
+    console.log(this.wx.qrcode(uuid));
+    return uuid;
   }
   waitingForScan(uuid){
     var self = this;
@@ -524,7 +515,7 @@ WeChat.SuperClient = class SuperClient extends EventEmitter {
               accept(qs.parse(url.parse(status.redirect_uri).query))
               break;
             case 201:
-              console.log('scan qrcode success, waiting for login.');
+              console.log('> scan qrcode success, waiting for login.');
             default:
               setTimeout(wait, 1000);
               break;
@@ -537,11 +528,19 @@ WeChat.SuperClient = class SuperClient extends EventEmitter {
     return this.wx.login(data.uuid, data.ticket);
   }
   init(data){
+    var self = this;
     this.client = new WeChat.Client(data);
+    this.client.on('ready', function(d){
+      self.emit('ready', d);
+    });
     return this.client.init();
   }
   contacts(){
-    return this.client.contacts();
+    var self = this;
+    return this.client.contacts().then(function(contacts){
+      self.Contacts = contacts.MemberList;
+      self.emit('contacts', self.Contacts);
+    });
   }
   loop(){
     var self = this;
@@ -553,28 +552,56 @@ WeChat.SuperClient = class SuperClient extends EventEmitter {
           case 1100:
             console.error('sign out', s.retcode);
             break;
+          case 1101:
+            console.log('login to another device');
+            break;
           default:
             console.error('sync check failed', s.retcode);
             break;
         }
         switch (parseInt(s.selector, 10)) {
           case 0:
+            // nothing
+            break;
+          case 6:
+            self.emit('message:response', s);
             break;
           case 2:
+          case 7:
             self.client.sync().then(function(d){
               self.processMessage(d.AddMsgList)
             });
             break;
           default:
+            console.error('unknow selector', s.selector);
             break;
         }
         setTimeout(loop, 100);
       });
     })();
   }
+  parseGroupChatMessage(msg){
+    msg.Content = msg.Content.replace(/^(@[a-zA-Z0-9]+):<br\/>/, function(_, sender){
+      msg.ActualSender = sender;
+      return '';
+    });
+    return msg;
+  }
+  getUserFromUserName(username){
+    if(!this.Contacts) return;
+    if(WeChat.SuperClient.isGroupChat(username)){
+      // return this.ChatSet.
+      return;
+    }
+    return this.Contacts.filter(function(contact){
+      return contact.UserName == username;
+    })[0];
+  }
   processMessage(msgs){
     var self = this;
     msgs.forEach(function(msg){
+
+      msg = self.parseGroupChatMessage(msg);
 
       var msgType = Object.keys(WeChat.Client.MSG_TYPE).filter(function(type){
         return WeChat.Client.MSG_TYPE[ type ] == msg.MsgType;
@@ -582,10 +609,13 @@ WeChat.SuperClient = class SuperClient extends EventEmitter {
 
       switch(parseInt(msg.MsgType, 10)){
         case WeChat.Client.MSG_TYPE.TEXT:
-          console.log('%s > %s: %s', msgType, msg.FromUserName, msg.Content);
+          self.emit('message:text', msg);
           break;
         case WeChat.Client.MSG_TYPE.STATUS_NOTIFY:
           self.processStatusNotify(msg);
+          break;
+        default:
+          console.error('unknow message type', msg.MsgType);
           break;
       }
 
@@ -597,16 +627,28 @@ WeChat.SuperClient = class SuperClient extends EventEmitter {
         console.log(msg.StatusNotifyUserName.split(','));
         break;
       case WeChat.Client.STATUS_NOTIFY_CODE.ENTER_SESSION:
-        console.log('ENTER_SESSION');
+        this.emit('session:enter', msg);
         break;
       case WeChat.Client.STATUS_NOTIFY_CODE.QUIT_SESSION:
-        console.log('QUIT_SESSION');
+        this.emit('session:quit', msg);
+        break;
+      case WeChat.Client.STATUS_NOTIFY_CODE.READED:
+        this.emit('message:readed', msg);
+        break;
+      case Wechat.Client.STATUS_NOTIFY_CODE.MOMENTS:
+        this.emit('moments', msg);
         break;
       default:
         console.log(msg.StatusNotifyCode);
         break;
     }
   }
+
+  isGroupChat(user) {
+    var name = user.UserName || user;
+    return name && /^@@|@chatroom$/.test(name);
+  }
+
 }
 
 module.exports = WeChat;
