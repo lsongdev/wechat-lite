@@ -11,6 +11,11 @@ class R {
     this._headers = {};
     this._method  = 'get';
   }
+  static json(){
+    return function(res){
+      return JSON.parse(res.text);
+    }
+  }
   get(u){
     this._method = 'get';
     if(u) {
@@ -77,8 +82,9 @@ class R {
           buffer.push(chunk);
         }).on('end', function(){
           accept({
-            text   : buffer.join(''),
-            headers: res.headers
+            text       : buffer.join(''),
+            headers    : res.headers,
+            statusCode : res.statusCode
           });
         });
       });
