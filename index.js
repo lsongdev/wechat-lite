@@ -1,14 +1,9 @@
 'use strict';
-// const http          = require('http');
-// const https         = require('https');
-// const crypto        = require('crypto');
+const crypto        = require('crypto');
 const EventEmitter  = require('events');
-// const url           = require('url');
-// const qs            = require('querystring');
-// const request       = require('superagent');
+const qs            = require('querystring');
 const debug         = require('debug')('wechat');
 const ERROR_CODES   = require('./errcode');
-// const promiseify    = require('./promiseify');
 const R             = require('./request');
 /**
  * Wechat
@@ -29,22 +24,6 @@ class WeChat extends EventEmitter {
       defaults[ key ] = options[ key ];
     }
     this.options = defaults;
-  }
-  /**
-   * [throwError description]
-   * @param  {[type]}   err      [description]
-   * @param  {Function} callback [description]
-   * @return {[type]}            [description]
-   */
-  throwError(msg, err){
-    if(err){
-      err.msg = msg;
-    }else{
-      err = new Error(msg);
-    }
-    // err.msg = msg;
-    this.emit('error', err);
-    throw err;
   }
   /**
    * [handleResponse description]
@@ -85,8 +64,7 @@ class WeChat extends EventEmitter {
       appid     : self.options.appId     ,
       secret    : self.options.appSecret ,
       grant_type: grantType || 'client_credential'
-    })
-    .end().then(R.json())
+    }).end().then(R.json())
   }
   /**
    * [getTicket description]
@@ -95,16 +73,12 @@ class WeChat extends EventEmitter {
    */
   getTicket(token){
     var self = this;
-    return promiseify(function(callback){
-      request
-      .get(`https://api.weixin.qq.com/cgi-bin/ticket/getticket`)
-      .query({
-        type         : 'jsapi',
-        access_token : token
-      })
-      .timeout(self.options.timeout)
-      .end(self.handleResponse(callback));
-    });
+    return new R()
+    .get('https://api.weixin.qq.com/cgi-bin/ticket/getticket')
+    .query({
+      type         : 'jsapi',
+      access_token : token
+    }).end().then(R.json())
   }
   /**
    * [genSignature description]
@@ -159,6 +133,22 @@ class WeChat extends EventEmitter {
     });
   }
   /**
+   * [getAuthorizeURL description]
+   * @param  {[type]} callbackURL [description]
+   * @param  {[type]} scope       [snsapi_base|snsapi_userinfo]
+   * @param  {[type]} state       [description]
+   * @return {[type]}             [description]
+   */
+  getAuthorizeURL(callbackURL, scope, state){
+    return [ 'https://open.weixin.qq.com/connect/oauth2/authorize', '?' , qs.stringify({
+      appid         : this.options.appId    ,
+      scope         : scope || 'snsapi_base',
+      state         : state                 ,
+      response_type : 'code'                ,
+      redirect_uri  : callbackURL
+    }), '#wechat_redirect' ].join('');
+  }
+  /**
    * [getAuthorizeToken description]
    * @param  {[type]} code [description]
    * @return {[type]}      [description]
@@ -166,93 +156,93 @@ class WeChat extends EventEmitter {
    */
   getAuthorizeToken(code){
     var self = this;
-    return promiseify(function(callback){
-      request
-      .get('https://api.weixin.qq.com/sns/oauth2/access_token')
-      .query({
-        appid : self.options.appId,
-        secret: self.options.appSecret,
-        code  : code,
-        grant_type: 'authorization_code'
-      })
-      .end(self.handleResponse(callback));
-    });
+    return new R()
+    .get('https://api.weixin.qq.com/sns/oauth2/access_token')
+    .query({
+      code  : code                  ,
+      appid : self.options.appId    ,
+      secret: self.options.appSecret,
+      grant_type: 'authorization_code'
+    }).end().then(R.json())
   }
-  checkAuthorizeToken(){
-    //https://api.weixin.qq.com/sns/auth?access_token=ACCESS_TOKEN&openid=OPENID
+  /**
+   * [checkAuthorizeToken description]
+   * @param  {[type]} token  [description]
+   * @param  {[type]} openId [description]
+   * @return {[type]}        [description]
+   * @docs https://mp.weixin.qq.com/wiki/17/c0f37d5704f0b64713d5d2c37b468d75.html
+   */
+  checkAuthorizeToken(token, openId){
+    return new R()
+    .get('https://api.weixin.qq.com/sns/auth')
+    .query({
+      openid: openId,
+      access_token: token
+    }).end().then(R.json())
   }
-  refreshAuthorizeToken(){
-    //https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=APPID&grant_type=refresh_token&refresh_token=REFRESH_TOKEN
+  /**
+   * [refreshAuthorizeToken description]
+   * @param  {[type]} refreshToken [description]
+   * @return {[type]}              [description]
+   * @docs https://mp.weixin.qq.com/wiki/17/c0f37d5704f0b64713d5d2c37b468d75.html
+   */
+  refreshAuthorizeToken(refreshToken){
+    return new R()
+    .get('https://api.weixin.qq.com/sns/oauth2/refresh_token')
+    .query({
+      appid         : this.options.appId,
+      grant_type    : 'refresh_token'   ,
+      refresh_token : refreshToken      ,
+    }).end().then(R.json())
   }
+  /**
+   * [getUser description]
+   * @param  {[type]} token    [description]
+   * @param  {[type]} openId   [description]
+   * @param  {[type]} language [description]
+   * @return {[type]}          [description]
+   * @docs https://mp.weixin.qq.com/wiki/17/c0f37d5704f0b64713d5d2c37b468d75.html
+   */
   getUser(token, openId, language){
     var self = this;
-    return promiseify(function(callback){
-      request
-      .get('https://api.weixin.qq.com/sns/userinfo')
-      .query({
-        access_token  : token ,
-        openid        : openId,
-        lang          : language || 'zh_CN'
-      })
-      .end(self.handleResponse(callback));
-    });
+    return new R()
+    .get('https://api.weixin.qq.com/sns/userinfo')
+    .query({
+      access_token  : token ,
+      openid        : openId,
+      lang          : language || 'zh_CN'
+    }).end().then(R.json());
   }
-  getAuthorizeURL(callbackURL, scope, state){
-    var api = 'https://open.weixin.qq.com/connect/oauth2/authorize';
-    var querystring = qs.stringify({
-      appid         : this.options.appId  ,
-      redirect_uri  : callbackURL         ,
-      response_type : 'code'              ,
-      scope         : scope               ,
-      state         : state
-    });
-    return [ api, '?' ,querystring ,'#wechat_redirect' ].join('');
-  }
-  parseJS(input){
-    var obj = {};
-    input
-    .split(';')
-    .filter(function(item){
-      return !!item.trim();
-    })
-    .map(function(item){
-      return item
-        .replace('=', '$')
-        .replace(/"/g, '')
-        .replace('window.', '')
-        .split('$')
-        .map(function(k){
-          return k.trim()
-        })
-    })
-    .forEach(function(item){
-      obj[ item[0] ] = item[1]
-    });
-    return obj;
-  }
+  /**
+   * [getUUID description]
+   * @return {[type]} [description]
+   */
   getUUID(){
     var self = this;
     return new R()
     .get('https://login.weixin.qq.com/jslogin')
     .query({ appid: this.options.appId })
-    .end().then(function(res){
-      var o = self.parseJS(res.text);
-      if(parseInt(o[ 'QRLogin.code' ]) == 200)
-        return o[ 'QRLogin.uuid' ];
-      throw new Error('can not request uuid for now');
-    });
+    .end()
   }
+  /**
+   * [qrcode description]
+   * @param  {[type]} uuid [description]
+   * @return {[type]}      [description]
+   */
   qrcode(uuid){
     return [ 'https://login.weixin.qq.com/qrcode', uuid ].join('/');
   }
+  /**
+   * [status description]
+   * @param  {[type]} uuid [description]
+   * @return {[type]}      [description]
+   */
   status(uuid){
     var self = this;
     return new R()
     .get('https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login')
     .query({'uuid': uuid})
-    .end().then(function(res){
-      return self.parseJS(res.text);
-    })
+    .end()
   }
   /**
    * [login description]
@@ -279,5 +269,6 @@ class WeChat extends EventEmitter {
   }
 }
 
+WeChat.Client = require('./client');
 
-module.exports = WeChat;
+module.exports= WeChat;
