@@ -4,7 +4,7 @@ const EventEmitter  = require('events');
 const qs            = require('querystring');
 const debug         = require('debug')('wechat');
 const ERROR_CODES   = require('./errcode');
-const R             = require('./request');
+const R             = require('request-js');
 /**
  * Wechat
  */
@@ -213,6 +213,14 @@ class WeChat extends EventEmitter {
       lang          : language || 'zh_CN'
     }).end().then(R.json());
   }
+  parseJS(code, scope){
+    var window = {};
+    if(scope){
+      window[ scope ] = {};
+    }
+    eval(code);
+    return scope ? window[scope] : window;
+  }
   /**
    * [getUUID description]
    * @return {[type]} [description]
@@ -222,7 +230,9 @@ class WeChat extends EventEmitter {
     return new R()
     .get('https://login.weixin.qq.com/jslogin')
     .query({ appid: this.options.appId })
-    .end()
+    .end().then(function(res){
+      return self.parseJS(res.text, 'QRLogin').uuid;
+    })
   }
   /**
    * [qrcode description]
@@ -242,7 +252,9 @@ class WeChat extends EventEmitter {
     return new R()
     .get('https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login')
     .query({'uuid': uuid})
-    .end()
+    .end().then(function(res){
+      return self.parseJS(res.text);
+    })
   }
   /**
    * [login description]
@@ -251,6 +263,11 @@ class WeChat extends EventEmitter {
    * @return {[type]}        [description]
    */
   login(uuid, ticket){
+    if(!ticket){
+      var u   = qs.parse(uuid.split('?')[1]);
+      uuid    = u.uuid;
+      ticket  = u.ticket;
+    }
     return new R()
     .get('https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage')
     .query('uuid'  , uuid)
@@ -265,7 +282,7 @@ class WeChat extends EventEmitter {
         data[ item[0] ] = item[1];
       });
       return data;
-    });
+    })
   }
 }
 

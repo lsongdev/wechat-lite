@@ -1,4 +1,6 @@
-const WeChat = require('.');
+'use strict';
+const EventEmitter  = require('events');
+const WeChat        = require('.');
 /**
  * [exports description]
  * @type {[type]}

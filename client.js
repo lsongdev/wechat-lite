@@ -1,9 +1,11 @@
-
+'use strict';
+const EventEmitter  = require('events');
+const R             = require('request-js');
 /**
  * [Client description]
  * @type {[type]}
  */
-module.exports = class WeChatClient extends EventEmitter {
+class WeChatClient extends EventEmitter {
   constructor(options){
     super();
     this.options  = options;
@@ -99,7 +101,7 @@ module.exports = class WeChatClient extends EventEmitter {
    * @return {[type]}     [description]
    */
   send(msg, to){
-    new R()
+    return new R()
     .post('https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxsendmsg')
     .cookie(this.options)
     .send({
@@ -208,3 +210,6 @@ WeChatClient.SEX = {
   MALE: 1,
   FEMALE: 2,
 };
+
+
+module.exports = WeChatClient;
