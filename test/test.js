@@ -26,23 +26,22 @@ describe('share api', function() {
 });
 
 describe('authorize', function() {
-
-
+  //
   it('get authorize URL', function(){
-    wx.getAuthorizeURL('http://m.maoyan.com', null, '123')
+    console.log(wx.getAuthorizeURL('http://m.maoyan.com', WeChat.SCOPE.USER, '123'));
   });
 
   it('get authorize token', function(done){
-    wx.getAuthorizeToken('01109fabd1e741a9aac7348668be11eb').then(function(token){
-      // console.log(token);
+    wx.getAuthorizeToken('0110ed94df29a1c0adeda594cb6c6b2P').then(function(token){
+      console.log(token);
       done();
     });
   });
 
 
   it('check authorize token', function(done){
-    wx.checkAuthorizeToken('OezaXcEiiBSKSxW0eoylIeHEMo4ABkin7cUio3wV6I9YIElMx8V2Ir26CzZxUls9hqbjsSyi0EzWtHEEQOZIr0-cZoXmYc08_IH02VUnWQtjXQLxCm01lTUJ5nkvvjHUErttPRCivMRnNJRYf3JYfnw', 'ogpecs5Ch6rAvgZCNVI7Tw9H15xw').then(function(res){
-      // console.log(res);
+    wx.checkAuthorizeToken('OezXcEiiBSKSxW0eoylIeHEMo4ABkin7cUio3wV6I9YIElMx8V2Ir26CzZxUls9helrxSZIMnxh09P5ZLFPrCQcjoTatkojZGG1NpeqD_y1XY1KKiM18GFBkiTdAyuhkVyAuZmbNRwU63Obzaww9uw', 'ogpecs5Ch6rAvgZCNVI7Tw9H15xw').then(function(res){
+      console.log(res);
       done();
     })
   })
@@ -53,9 +52,10 @@ describe('authorize', function() {
     });
   })
 
-  it('get user info', function(){
-    wx.getUser('OezXcEiiBSKSxW0eoylIeHEMo4ABkin7cUio3wV6I9YIElMx8V2Ir26CzZxUls9hqbjsSyi0EzWtHEEQOZIr0-cZoXmYc08_IH02VUnWQtjXQLxCm01lTUJ5nkvvjHUErttPRCivMRnNJRYf3JYfnw', 'ogpecs5Ch6rAvgZCNVI7Tw9H15xw', 'en').then(function(user){
-      // console.log(user);
+  it('get user info', function(done){
+    wx.getUser('OezXcEiiBSKSxW0eoylIeHEMo4ABkin7cUio3wV6I9YjdQ6KKeyFLnxHuJ0BrhtfNq4PpcpYuYfQ15FBcRfZtegkUrkSTseD-jwSfLFJBgigKC9r1MSE-RwqqMspkMTzpeqqZtI9C8pebyfBaMd41Q', 'ogpecs6OTcdMJkCAgWv77bhztHLY', 'en').then(function(user){
+      console.log(user);
+      done()
     });
   })
 

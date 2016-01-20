@@ -142,7 +142,7 @@ class WeChat extends EventEmitter {
   getAuthorizeURL(callbackURL, scope, state){
     return [ 'https://open.weixin.qq.com/connect/oauth2/authorize', '?' , qs.stringify({
       appid         : this.options.appId    ,
-      scope         : scope || 'snsapi_base',
+      scope         : scope || WeChat.SCOPE.BASE,
       state         : state                 ,
       response_type : 'code'                ,
       redirect_uri  : callbackURL
@@ -285,6 +285,12 @@ class WeChat extends EventEmitter {
     })
   }
 }
+
+
+WeChat.SCOPE = {
+  BASE: 'snsapi_base',
+  USER: 'snsapi_userinfo'
+};
 
 WeChat.Client = require('./client');
 
