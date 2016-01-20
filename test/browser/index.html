@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+<title>WeChat API</title>
+<style media="screen">
+.btn{
+  color: #fff;
+  display: block;
+  font-size: 18px;
+  line-height: 2.3;
+  border-radius: 5px;
+  text-align: center;
+  text-decoration: none;
+  background-color: #04BE02;
+  margin: 20px auto;
+}
+</style>
+<script type="text/javascript" src="../browser.js" ></script>
+<script type="text/javascript">
+window.onerror = function(err){
+  alert(err);
+};
+
+
+;(function(done){
+  var request = new XMLHttpRequest();
+  request.open('get', '/wechat?url=' + location.href.split('#')[0]);
+  request.onload = done;
+  request.send();
+})(function(){
+
+  var body = JSON.parse(this.response);
+
+  var wx = new WeChat(body).ready(function(){
+    this.init([
+      'menu:share:timeline',
+      'menu:share:appmessage'
+    ], function(res){
+      alert(res.err_msg);
+
+      wx.network(function(type){
+        alert(type);
+      });
+
+      wx.on('menu:share:timeline', function(){
+        wx.invoke('shareTimeline', {
+          title: 'hello',
+          link: 'http://lsong.org',
+          img_url: 'http://api.lsong.org/qr?text=lsong',
+        });
+      });
+
+      wx.on('menu:share:appmessage', function(){
+        wx.invoke('sendAppMessage', {
+          title: 'message',
+          desc: 'message desc',
+          link: 'http://blog.lsong.org',
+          img_url: 'http://api.lsong.org/qr?text=lsong',
+          data_url: '',
+          type: ''
+        });
+      });
+
+      wx.invoke('imagePreview', {
+        current: 'http://api.lsong.org/qr?text=lsong',
+        urls:[
+          'http://api.lsong.org/qr?text=lsong',
+          'http://api.lsong.org/qr?text=lsong',
+          'http://api.lsong.org/qr?text=lsong',
+          'http://api.lsong.org/qr?text=lsong',
+          'http://api.lsong.org/qr?text=lsong'
+        ]
+      });
+
+    });
+  });
+
+  window.wx = wx;
+
+})
+</script>
+</head>
+<body>
+  <div class="">
+    <h1>WeChat JS SDK</h1>
+    <a href="javascript: wx.close()" class="btn" >close</a>
+    <a href="javascript: wx.close()" class="btn" >close</a>
+    <a href="javascript: wx.close()" class="btn" >close</a>
+    <a href="javascript: wx.close()" class="btn" >close</a>
+    <a href="javascript: wx.close()" class="btn" >close</a>
+    <a href="javascript: wx.close()" class="btn" >close</a>
+    <a href="javascript: wx.close()" class="btn" >close</a>
+    <a href="javascript: wx.close()" class="btn" >close</a>
+    <a href="javascript: wx.close()" class="btn" >close</a>
+    <a href="javascript: wx.close()" class="btn" >close</a>
+    <a href="javascript: wx.close()" class="btn" >close</a>
+    <a href="javascript: wx.close()" class="btn" >close</a>
+  </div>
+</body>
+</html>

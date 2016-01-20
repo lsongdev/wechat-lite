@@ -86,11 +86,13 @@ class WeChat extends EventEmitter {
    * @return {[type]}        [description]
    */
   genSignature(ticket){
+    var self = this;
     function signature(params){
       var shasum = crypto.createHash('sha1');
       shasum.update(Object.keys(params).sort().map(function(key){
         return [ key , params[ key ] ].join('=');
       }).join('&'));
+      params.appId     = self.options.appId;
       params.signature = shasum.digest('hex');
       return params;
     }

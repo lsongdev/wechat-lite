@@ -27,5 +27,8 @@
   },
   "directories": {
     "test": "test"
+  },
+  "devDependencies": {
+    "weui": "^0.2.3"
   }
 }
