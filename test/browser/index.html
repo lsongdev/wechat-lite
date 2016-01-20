@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width" >
+<title>WeChat API</title>
+<style>
+.btn{
+  color: #fff;
+  display: block;
+  font-size: 18px;
+  line-height: 2.3;
+  margin: 20px auto;
+  border-radius: 5px;
+  text-align: center;
+  text-decoration: none;
+  background-color: #04BE02;
+}
+</style>
+<script type="text/javascript" src="../browser.js" ></script>
+<script type="text/javascript">
+window.onerror = function(err){
+  alert(err);
+};
+
+</script>
+<script type="text/javascript">
+;(function(done){
+  var request = new XMLHttpRequest();
+  request.open('get', '/wechat?url=' + location.href.split('#')[0]);
+  request.onload = done;
+  request.send();
+})(function(){
+  var body = JSON.parse(this.response);
+  var wx = window.wx = new WeChat(body).ready(function(){
+    this.init([
+      'menu:share:timeline',
+      'menu:share:appmessage'
+    ], function(res){
+      alert(res.err_msg);
+    });
+  });
+});
+</script>
+<script type="text/javascript">
+var events = {};
+function on(name, handler){
+  events[ name ] = handler;
+}
+document.onclick = function(ev){
+  if(events[ ev.target.id ]) events[ ev.target.id ]();
+}
+</script>
+<script type="text/javascript">
+on('message', function(){
+  wx.on('menu:share:appmessage', function(){
+    wx.invoke('sendAppMessage', {
+      title: 'message',
+      desc: 'message desc',
+      link: 'http://blog.lsong.org',
+      img_url: 'http://api.lsong.org/qr?text=lsong',
+      data_url: '',
+      type: ''
+    }, function(err){
+      alert(JSON.stringify(err));
+    });
+  });
+  alert('message');
+})
+
+on('timeline', function(){
+  wx.on('menu:share:timeline', function(){
+    wx.invoke('shareTimeline', {
+      title: 'hello',
+      link: 'http://lsong.org',
+      img_url: 'http://api.lsong.org/qr?text=lsong',
+    });
+  });
+  alert('timeline');
+});
+
+on('preview', function(){
+  wx.invoke('imagePreview', {
+    current: 'http://api.lsong.org/qr?text=lsong',
+    urls:[
+      'http://api.lsong.org/qr?text=lsong',
+      'http://api.lsong.org/qr?text=lsong',
+      'http://api.lsong.org/qr?text=lsong',
+      'http://api.lsong.org/qr?text=lsong',
+      'http://api.lsong.org/qr?text=lsong'
+    ]
+  });
+});
+
+on('network', function(){
+  wx.network(function(type){
+    alert(type);
+  });
+});
+
+on('close', function(){
+  wx.close(function(err){
+    alert(err.err_msg)
+  });
+});
+
+on('refresh', function(){
+  location.reload();
+});
+
+</script>
+</head>
+<body>
+  <div class="container">
+    <h1>WeChat JS SDK</h1>
+    <a id="network"   class="btn" href="javascript: void(0);" >network</a>
+    <a id="timeline"  class="btn" href="javascript: void(0);" >timeline</a>
+    <a id="message"   class="btn" href="javascript: void(0);" >message</a>
+    <a id="preview"   class="btn" href="javascript: void(0);" >preview</a>
+    <a id="close"     class="btn" href="javascript: void(0);" >close</a>
+    <a id="refresh"   class="btn" href="javascript: void(0);" >refresh</a>
+  </div>
+</body>
+</html>

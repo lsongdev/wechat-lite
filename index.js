@@ -6,6 +6,7 @@ const qs = require('querystring');
 const debug = require('debug')('wechat');
 const ERROR_CODES = require('./errcode');
 const R = require('request-js');
+
 /**
  * Wechat
  */
@@ -88,6 +89,7 @@ class WeChat extends EventEmitter {
    * [getTicket description]
    * @param  {[type]} token [description]
    * @return {[type]}       [description]
+   * @docs http://mp.weixin.qq.com/wiki/11/0e4b294685f817b95cbed85ba5e82b8f.html
    */
   getTicket(token) {
     var self = this;
@@ -102,13 +104,16 @@ class WeChat extends EventEmitter {
    * [genSignature description]
    * @param  {[type]} ticket [description]
    * @return {[type]}        [description]
+   * @docs http://mp.weixin.qq.com/wiki/11/0e4b294685f817b95cbed85ba5e82b8f.html
    */
-  genSignature(ticket) {
-    function signature(params) {
+  genSignature(ticket){
+    var self = this;
+    function signature(params){
       var shasum = crypto.createHash('sha1');
       shasum.update(Object.keys(params).sort().map(function (key) {
         return [key, params[key]].join('=');
       }).join('&'));
+      params.appId     = self.options.appId;
       params.signature = shasum.digest('hex');
       return params;
     }
@@ -156,15 +161,16 @@ class WeChat extends EventEmitter {
    * @param  {[type]} scope       [snsapi_base|snsapi_userinfo]
    * @param  {[type]} state       [description]
    * @return {[type]}             [description]
+   * @docs http://mp.weixin.qq.com/wiki/4/9ac2e7b1f1d22e9e57260f6553822520.html
    */
-  getAuthorizeURL(callbackURL, scope, state) {
-    return ['https://open.weixin.qq.com/connect/oauth2/authorize', '?', qs.stringify({
-      appid: this.options.appId,
-      scope: scope || 'snsapi_base',
-      state: state,
-      response_type: 'code',
-      redirect_uri: callbackURL
-    }), '#wechat_redirect'].join('');
+  getAuthorizeURL(callbackURL, scope, state){
+    // NOTES: QUERYSTRING ORDER IS VERY IMPORTANT !!!
+    return 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=$appId&redirect_uri=$redirect_uri&response_type=code&scope=$scope&state=$state#wechat_redirect'
+      .replace('$appId'         , this.options.appId)
+      .replace('$state'         , state || 'wechat')
+      .replace('$scope'         , scope || WeChat.SCOPE.BASE)
+      .replace('$redirect_uri'  , encodeURIComponent(callbackURL))
+
   }
   /**
    * [getAuthorizeToken description]
@@ -224,14 +230,20 @@ class WeChat extends EventEmitter {
   getUser(token, openId, language) {
     var self = this;
     return new R()
-      .get('https://api.weixin.qq.com/sns/userinfo')
-      .query({
-        access_token: token,
-        openid: openId,
-        lang: language || 'zh_CN'
-      }).end().then(R.json());
+    .get('https://api.weixin.qq.com/sns/userinfo')
+    .query({
+      access_token  : token ,
+      openid        : openId,
+      lang          : language || 'en'
+    }).end().then(R.json());
   }
-  parseJS(code, scope) {
+  /**
+   * [parseJS description]
+   * @param  {[type]} code  [description]
+   * @param  {[type]} scope [description]
+   * @return {[type]}       [description]
+   */
+  parseJS(code, scope){
     var window = {};
     if (scope) {
       window[scope] = {};
@@ -303,6 +315,15 @@ class WeChat extends EventEmitter {
     })
   }
 }
+
+/**
+ * [SCOPE description]
+ * @type {Object}
+ */
+WeChat.SCOPE = {
+  BASE: 'snsapi_base',
+  USER: 'snsapi_userinfo'
+};
 
 WeChat.Client = require('./client');
 

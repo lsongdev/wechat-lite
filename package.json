@@ -1,6 +1,6 @@
 {
   "name": "wechat-lite",
-  "version": "2.1.0",
+  "version": "2.1.3",
   "description": "wechat js api",
   "main": "index.js",
   "scripts": {
@@ -27,5 +27,8 @@
   },
   "directories": {
     "test": "test"
+  },
+  "devDependencies": {
+    "weui": "^0.2.3"
   }
 }
