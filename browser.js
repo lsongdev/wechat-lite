@@ -24,7 +24,7 @@ function WeChat(config, ready){
 };
 
 /**
- * [function description]
+ * [function filter]
  * @param  {[type]} src    [description]
  * @param  {[type]} fields [description]
  * @return {[type]}        [description]
@@ -38,7 +38,7 @@ WeChat.filter = function(src, fields){
   return obj;
 };
 /**
- * [function description]
+ * [function merge]
  * @param  {[type]} a [description]
  * @param  {[type]} b [description]
  * @return {[type]}   [description]
@@ -50,7 +50,7 @@ WeChat.merge = function(a, b){
   return obj;
 };
 /**
- * [function description]
+ * [function copy]
  * @param  {[type]} src  [description]
  * @param  {[type]} maps [description]
  * @return {[type]}      [description]
@@ -63,15 +63,27 @@ WeChat.copy = function(src, maps){
   }
   return obj;
 };
+/**
+ * [function log]
+ * @param  {[type]} msg [description]
+ * @return {[type]}     [description]
+ */
+WeChat.prototype.log = function(msg){
+  msg = [ '[WeChat]', msg ].join(': ');
+  if(this.config.debug) alert(msg);
+  else console.debug(msg);
+  return this;
+};
 
 /**
- * [function description]
+ * [function ready]
  * @param  {Function} callback [description]
  * @return {[type]}            [description]
  */
 WeChat.prototype.ready = function(callback){
   var self = this;
   var done = function(){
+    if(self.bridge) return self;
     self.bridge = WeixinJSBridge;
     callback.call(self, self);
     return self;
@@ -89,7 +101,7 @@ WeChat.prototype.ready = function(callback){
 };
 
 /**
- * [function description]
+ * [function init]
  * @param  {[type]}   apis     [description]
  * @param  {Function} callback [description]
  * @return {[type]}            [description]
@@ -100,7 +112,7 @@ WeChat.prototype.init = function(apis, callback){
   }, callback);
 };
 /**
- * [function description]
+ * [function network]
  * @param  {Function} callback [description]
  * @return {[type]}            [description]
  */
@@ -126,6 +138,7 @@ WeChat.prototype.close = function(callback){
  * @return {[type]}            [description]
  */
 WeChat.prototype.invoke = function(method, args, callback){
+  if(!this.bridge) return this.log('bridge is not defined');
   var params = WeChat.copy(this.config, {
                appId : 'appId'      ,
          verifyAppId : 'appId'      ,
@@ -144,6 +157,7 @@ WeChat.prototype.invoke = function(method, args, callback){
  * @return {[type]}         [description]
  */
 WeChat.prototype.on = function(event, handler){
+  if(!this.bridge) return this.log('bridge is not defined');
   this.bridge.on(event, handler);
   return this;
 };

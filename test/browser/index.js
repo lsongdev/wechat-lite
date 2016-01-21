@@ -32,14 +32,12 @@ wx.getToken()
 .then(wx.getTicket.bind(wx))
 .then(function(ticket){
   _ticket = ticket.ticket;
-
 });
 
 var server = http.createServer(function(req, res){
   if(!s(req, res)){
-    console.log(_ticket)
     var body = wx.genSignature(_ticket)(req.url.split('?url=')[1]);
     res.write(JSON.stringify(body));
     res.end();
   }
-}).listen(3000);
+}).listen(4000);
