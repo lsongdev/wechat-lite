@@ -28,11 +28,11 @@ describe('share api', function() {
 describe('authorize', function() {
   //
   it('get authorize URL', function(){
-    console.log(wx.getAuthorizeURL('http://m.maoyan.com', WeChat.SCOPE.USER, '123'));
+    console.log(wx.getAuthorizeURL('http://m.maoyan.com/redirect/piaofang?_v_=yes', WeChat.SCOPE.BASE, '123'));
   });
 
   it('get authorize token', function(done){
-    wx.getAuthorizeToken('0110ed94df29a1c0adeda594cb6c6b2P').then(function(token){
+    wx.getAuthorizeToken('0019f65a8630c62582db44d7a5eeb8ec').then(function(token){
       console.log(token);
       done();
     });
@@ -53,7 +53,7 @@ describe('authorize', function() {
   })
 
   it('get user info', function(done){
-    wx.getUser('OezXcEiiBSKSxW0eoylIeHEMo4ABkin7cUio3wV6I9YjdQ6KKeyFLnxHuJ0BrhtfNq4PpcpYuYfQ15FBcRfZtegkUrkSTseD-jwSfLFJBgigKC9r1MSE-RwqqMspkMTzpeqqZtI9C8pebyfBaMd41Q', 'ogpecs6OTcdMJkCAgWv77bhztHLY', 'en').then(function(user){
+    wx.getUser('OezXcEiiBSKSxW0eoylIeHEMo4ABkin7cUio3wV6I9YIElMx8V2Ir26CzZxUls9hUV2tBTOFOKIqvkVETJJ3awXTWIWMIOvNt8Km6ntD-5i_M3KlGOjDzx13cGStNbn__w-Du8hZxOngLVRK6iAIww', 'ogpecs5Ch6rAvgZCNVI7Tw9H15xw', 'en').then(function(user){
       console.log(user);
       done()
     });

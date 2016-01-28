@@ -142,13 +142,11 @@ class WeChat extends EventEmitter {
    * @return {[type]}             [description]
    */
   getAuthorizeURL(callbackURL, scope, state){
-    return [ 'https://open.weixin.qq.com/connect/oauth2/authorize', '?' , qs.stringify({
-      appid         : this.options.appId    ,
-      scope         : scope || WeChat.SCOPE.BASE,
-      state         : state                 ,
-      response_type : 'code'                ,
-      redirect_uri  : callbackURL
-    }), '#wechat_redirect' ].join('');
+    return 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=$appId&redirect_uri=$redirect_uri&response_type=code&scope=$scope&state=$state#wechat_redirect'
+      .replace('$appId'         , this.options.appId)
+      .replace('$redirect_uri'  , callbackURL)
+      .replace('$scope'         , scope)
+      .replace('$state'         , state)
   }
   /**
    * [getAuthorizeToken description]
