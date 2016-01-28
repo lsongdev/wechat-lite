@@ -1,10 +1,10 @@
 'use strict';
 const crypto        = require('crypto');
 const EventEmitter  = require('events');
+const R             = require('request-js');
 const qs            = require('querystring');
 const debug         = require('debug')('wechat');
 const ERROR_CODES   = require('./errcode');
-const R             = require('request-js');
 /**
  * Wechat
  */
@@ -140,13 +140,15 @@ class WeChat extends EventEmitter {
    * @param  {[type]} scope       [snsapi_base|snsapi_userinfo]
    * @param  {[type]} state       [description]
    * @return {[type]}             [description]
+   * @docs http://mp.weixin.qq.com/wiki/4/9ac2e7b1f1d22e9e57260f6553822520.html
    */
   getAuthorizeURL(callbackURL, scope, state){
+    // NOTES: QUERYSTRING ORDER IS VERY IMPORTANT !!!
     return 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=$appId&redirect_uri=$redirect_uri&response_type=code&scope=$scope&state=$state#wechat_redirect'
       .replace('$appId'         , this.options.appId)
       .replace('$redirect_uri'  , callbackURL)
-      .replace('$scope'         , scope)
-      .replace('$state'         , state)
+      .replace('$state'         , state || 'wechat')
+      .replace('$scope'         , scope || WeChat.SCOPE.BASE)
   }
   /**
    * [getAuthorizeToken description]
@@ -286,7 +288,10 @@ class WeChat extends EventEmitter {
   }
 }
 
-
+/**
+ * [SCOPE description]
+ * @type {Object}
+ */
 WeChat.SCOPE = {
   BASE: 'snsapi_base',
   USER: 'snsapi_userinfo'
@@ -294,4 +299,4 @@ WeChat.SCOPE = {
 
 WeChat.Client = require('./client');
 
-module.exports= WeChat;
+module.exports = WeChat;
