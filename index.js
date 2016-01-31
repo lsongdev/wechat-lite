@@ -70,6 +70,7 @@ class WeChat extends EventEmitter {
    * [getTicket description]
    * @param  {[type]} token [description]
    * @return {[type]}       [description]
+   * @docs http://mp.weixin.qq.com/wiki/11/0e4b294685f817b95cbed85ba5e82b8f.html
    */
   getTicket(token){
     var self = this;
@@ -84,6 +85,7 @@ class WeChat extends EventEmitter {
    * [genSignature description]
    * @param  {[type]} ticket [description]
    * @return {[type]}        [description]
+   * @docs http://mp.weixin.qq.com/wiki/11/0e4b294685f817b95cbed85ba5e82b8f.html
    */
   genSignature(ticket){
     var self = this;
@@ -146,9 +148,10 @@ class WeChat extends EventEmitter {
     // NOTES: QUERYSTRING ORDER IS VERY IMPORTANT !!!
     return 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=$appId&redirect_uri=$redirect_uri&response_type=code&scope=$scope&state=$state#wechat_redirect'
       .replace('$appId'         , this.options.appId)
-      .replace('$redirect_uri'  , callbackURL)
       .replace('$state'         , state || 'wechat')
       .replace('$scope'         , scope || WeChat.SCOPE.BASE)
+      .replace('$redirect_uri'  , encodeURIComponent(callbackURL))
+
   }
   /**
    * [getAuthorizeToken description]
@@ -212,9 +215,15 @@ class WeChat extends EventEmitter {
     .query({
       access_token  : token ,
       openid        : openId,
-      lang          : language || 'zh_CN'
+      lang          : language || 'en'
     }).end().then(R.json());
   }
+  /**
+   * [parseJS description]
+   * @param  {[type]} code  [description]
+   * @param  {[type]} scope [description]
+   * @return {[type]}       [description]
+   */
   parseJS(code, scope){
     var window = {};
     if(scope){
