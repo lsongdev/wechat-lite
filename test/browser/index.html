@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width" >
 <title>WeChat API</title>
 <style>
+body{
+  text-align: center;
+}
 .btn{
   color: #fff;
   display: block;
@@ -22,7 +25,6 @@
 window.onerror = function(err){
   alert(err);
 };
-
 </script>
 <script type="text/javascript">
 ;(function(done){
@@ -120,5 +122,8 @@ on('refresh', function(){
     <a id="close"     class="btn" href="javascript: void(0);" >close</a>
     <a id="refresh"   class="btn" href="javascript: void(0);" >refresh</a>
   </div>
+  <footer>
+    <img src="http://api.lsong.org/qr?text=http://m.maoyan.com" />
+  </footer>
 </body>
 </html>

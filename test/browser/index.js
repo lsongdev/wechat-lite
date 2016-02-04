@@ -1,27 +1,17 @@
-var http = require('http');
-var WeChat = require('../../');
-
-function serve(file){
-  var fs = require('fs');
-  return function(req, res){
-    var path = req.url;
-    if(path == '/') path = '/index.html';
-    path = __dirname + path;
-    if(fs.existsSync(path)){
-      fs.createReadStream(path).pipe(res);
-      return true;
-    }else{
-      return false;
-    }
-  }
-}
-
-var s = serve(__dirname);
+const url     = require('url');
+const http    = require('http');
+const connect = require('connect');
+const serveStatic = require('serve-static')
+const WeChat  = require('../../');
 
 var wx = new WeChat({
   appId     : 'wx779ea5a9af3d5d09',
   appSecret : 'ea6eea9459b57da58dbc673d1f52c4df'
 });
+
+const app = connect();
+
+app.use(serveStatic(__dirname))
 
 var _ticket;
 
@@ -34,10 +24,9 @@ wx.getToken()
   _ticket = ticket.ticket;
 });
 
-var server = http.createServer(function(req, res){
-  if(!s(req, res)){
-    var body = wx.genSignature(_ticket)(req.url.split('?url=')[1]);
-    res.write(JSON.stringify(body));
-    res.end();
-  }
-}).listen(4000);
+app.use('/wechat', function(req, res){
+  var u = url.parse(req.url, true);
+  res.end(JSON.stringify(wx.genSignature(_ticket)(u.query['url'])));
+});
+
+var server = http.createServer(app).listen(4000);

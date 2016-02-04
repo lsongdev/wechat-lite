@@ -273,18 +273,12 @@ class WeChat extends EventEmitter {
    * @param  {[type]} ticket [description]
    * @return {[type]}        [description]
    */
-  login(uuid, ticket){
-    if(!ticket){
-      var u   = qs.parse(uuid.split('?')[1]);
-      uuid    = u.uuid;
-      ticket  = u.ticket;
-    }
-    return new R()
-    .get('https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage')
-    .query('uuid'  , uuid)
-    .query('ticket', ticket)
+  login(url){
+    var data = { isQQ: /wx2.qq.com/.test(url) };
+    // 'https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage'
+    return new R().get(url)
     .end().then(function(res){
-      var data = {};
+
       res.headers['set-cookie'].filter(function(cookie){
         return /wxuin|wxsid|webwx_data_ticket/.test(cookie);
       }).map(function(cookie){

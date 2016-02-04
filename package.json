@@ -23,12 +23,13 @@
   "homepage": "https://github.com/song940/wechat-lite",
   "dependencies": {
     "debug": "*",
-    "request-js": "^1.0.1"
+    "request-js": "*"
   },
   "directories": {
     "test": "test"
   },
   "devDependencies": {
-    "weui": "^0.2.3"
+    "connect": "^3.4.1",
+    "serve-static": "^1.10.2"
   }
 }
