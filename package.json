@@ -4,7 +4,7 @@
   "description": "wechat js api",
   "main": "index.js",
   "scripts": {
-    "test": "node test/test.js"
+    "test": "mocha test/test.js"
   },
   "repository": {
     "type": "git",
@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "connect": "^3.4.1",
+    "mocha": "^2.4.5",
     "serve-static": "^1.10.2"
   }
 }
