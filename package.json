@@ -4,7 +4,7 @@
   "description": "wechat js api",
   "main": "index.js",
   "scripts": {
-    "test": "node test/test.js"
+    "test": "mocha test/test.js"
   },
   "repository": {
     "type": "git",
@@ -23,12 +23,14 @@
   "homepage": "https://github.com/song940/wechat-lite",
   "dependencies": {
     "debug": "*",
-    "request-js": "^1.0.1"
+    "request-js": "*"
   },
   "directories": {
     "test": "test"
   },
   "devDependencies": {
-    "weui": "^0.2.3"
+    "connect": "^3.4.1",
+    "mocha": "^2.4.5",
+    "serve-static": "^1.10.2"
   }
 }

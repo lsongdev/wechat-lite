@@ -13,6 +13,7 @@ class WeChatClient extends EventEmitter {
     this.sid      = options.wxsid;
     this.ticket   = options.webwx_data_ticket;
     this.deviceId = [ 'e', +new Date ].join('');
+    this.api      = ('http://wx' + (options.isQQ ? 2 : '') + '.qq.com');
   }
   /**
    * [BaseRequest description]
@@ -33,11 +34,12 @@ class WeChatClient extends EventEmitter {
   init(){
     var self = this;
     return new R()
-    .post('https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxinit')
+    .post(this.api + '/cgi-bin/mmwebwx-bin/webwxinit')
     .cookie(this.options)
     .send({ BaseRequest: this.BaseRequest })
     .end().then(function(res){
       var d = JSON.parse(res.text);
+      self.Data    = d;
       self.User    = d.User;
       self.SyncKey = d.SyncKey;
       self.ChatSet = d.ChatSet;
@@ -52,17 +54,13 @@ class WeChatClient extends EventEmitter {
   contacts(){
     var self = this;
     return new R()
-    .get('https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact')
+    .get(this.api + '/cgi-bin/mmwebwx-bin/webwxgetcontact')
     .cookie(this.options)
     .end().then(function(res){
       var d = JSON.parse(res.text);
       self.emit(WeChatClient.EVENTS.CONTACTS, d);
       return d;
     });
-  }
-
-  batchContacts(){
-
   }
 
   /**
@@ -102,7 +100,7 @@ class WeChatClient extends EventEmitter {
    */
   send(msg, to){
     return new R()
-    .post('https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxsendmsg')
+    .post(this.api + '/cgi-bin/mmwebwx-bin/webwxsendmsg')
     .cookie(this.options)
     .send({
       Msg : {
@@ -126,7 +124,7 @@ class WeChatClient extends EventEmitter {
   sync(){
     var self = this;
     return new R()
-    .post('https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxsync')
+    .post(this.api + '/cgi-bin/mmwebwx-bin/webwxsync')
     .cookie(this.options)
     .send({
       SyncKey     : this.SyncKey,
