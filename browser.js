@@ -1,3 +1,4 @@
+'use strict';
 /**
  * [WeChat client sdk]
  * @param {[type]} config [description]

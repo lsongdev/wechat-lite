@@ -1,6 +1,7 @@
 # wechat-lite
 
 ![travis-ci](https://travis-ci.org/song940/wechat-lite.svg) [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/song940/wechat-lite?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Circle CI](https://circleci.com/gh/song940/wechat-lite.svg)](https://circleci.com/gh/song940/wechat-lite)
 
 [WeChat](https://wx.qq.com/) API for nodejs .
 
@@ -9,7 +10,6 @@
 ## Installation
 
 	npm install wechat-lite --save
-
 
 ## Documentation
 

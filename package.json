@@ -1,6 +1,6 @@
 {
   "name": "wechat-lite",
-  "version": "2.1.3",
+  "version": "2.2.1",
   "description": "wechat js api",
   "main": "index.js",
   "scripts": {
@@ -23,14 +23,20 @@
   "homepage": "https://github.com/song940/wechat-lite",
   "dependencies": {
     "debug": "*",
-    "request-js": "*"
+    "jstoxml": "*",
+    "request-js": "*",
+    "xml2js": "*"
   },
   "directories": {
     "test": "test"
   },
   "devDependencies": {
-    "connect": "^3.4.1",
-    "mocha": "^2.4.5",
-    "serve-static": "^1.10.2"
+    "mocha": "*",
+    "kelp": "^1.0.4",
+    "kelp-body": "^1.2.0",
+    "kelp-logger": "^1.1.0",
+    "kelp-route": "^1.1.1",
+    "kelp-send": "^1.0.0",
+    "kelp-static": "^1.0.1"
   }
 }
