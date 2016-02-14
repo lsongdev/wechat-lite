@@ -143,12 +143,10 @@ class WeChat extends EventEmitter {
    */
   getCallbackIP(token){
     var self = this;
-    return promiseify(function(callback){
-      request
-      .get(`${this.options.api}/getcallbackip`)
-      .query({ access_token: token })
-      .end(self.handleResponse(callback));
-    });
+    new R()
+    .get(`${this.options.api}/getcallbackip`)
+    .query({ access_token: token })
+    .end().then(R.json());
   }
   /**
    * [getAuthorizeURL description]
