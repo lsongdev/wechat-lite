@@ -23,7 +23,9 @@
   "homepage": "https://github.com/song940/wechat-lite",
   "dependencies": {
     "debug": "*",
-    "request-js": "*"
+    "jstoxml": "^0.2.3",
+    "request-js": "*",
+    "xml2js": "^0.4.16"
   },
   "directories": {
     "test": "test"

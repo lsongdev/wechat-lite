@@ -1,7 +1,9 @@
-var http   = require('http');
-var wechat = require('../server');
+const url  = require('url');
+const http = require('http');
+const wechat  = require('../server');
 
-http.createServer(wechat('token', function(req, res){
-  // echo
-  res.pipe(req);
-})).listen(3000);
+const server = http.createServer(wechat('token', function(err, message){
+  return message.Content;
+}));
+
+server.listen(3000);

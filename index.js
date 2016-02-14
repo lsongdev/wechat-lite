@@ -110,6 +110,20 @@ class WeChat extends EventEmitter {
     }
   }
   /**
+   * [genSignature2 description]
+   * @param  {[type]} token     [description]
+   * @param  {[type]} timestamp [description]
+   * @param  {[type]} nonce     [description]
+   * @return {[type]}           [description]
+   * @docs http://mp.weixin.qq.com/wiki/8/f9a0b8382e0b77d87b3bcc1ce6fbc104.html
+   */
+  genSignature2(token, timestamp, nonce){
+    return crypto
+      .createHash('sha1')
+      .update(([]).slice.call(arguments).sort().join(''))
+      .digest('hex');
+  }
+  /**
    * [checkSignature description]
    * @param  {[type]} params    [description]
    * @param  {[type]} signature [description]

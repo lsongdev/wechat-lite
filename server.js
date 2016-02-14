@@ -1,98 +1,52 @@
-var crypto = require('crypto');
-var jstoxml = require('jstoxml');
+const url    = require('url');
+const crypto = require('crypto');
+const xml2js = require('xml2js');
+const js2xml = require('jstoxml');
 
-var msgQueue = [];
-
-var getFirst = function(arr){
-  return arr[0];
-};
-
-var parseMsg = function(data){
-  for(var key in data){
-    data[key] = getFirst(data[key]);
+module.exports = function WeChat(token, callback){
+  function genSignature(token, timestamp, nonce){
+    return crypto
+      .createHash('sha1')
+      .update(([]).slice.call(arguments).sort().join(''))
+      .digest('hex');
   }
-  return data;
-};
 
-var getReplyMsg = function(msg, type, message){
-  var replyMsg = {
-    FromUserName: msg['ToUserName'],
-    ToUserName  : msg['FromUserName'],
-    CreateTime  : parseInt(+new Date / 1000)
-  };
-  switch(type){
-    case 'text':
-      replyMsg['Content'] = message;
-      break;
-    case 'image':
-      replyMsg['Image'] = {
-        MediaId: message
-      };
-      break;
-    case 'voice':
-      replyMsg['Voice'] = {
-        MediaId: message
-      };
-      break;
-    case 'music':
-      replyMsg['Music'] = {
-        Title: message['title'],
-        Description: message['description'],
-        ThumbMediaId: message['pic'],
-        MusicUrl: message['url'],
-        HQMusicUrl: message['hq_url']
-      };
-      break;
-    case 'video':
-      replyMsg['Video'] = {
-        Title: message['title'],
-        Description: message['description'],
-        MediaId: message['MediaId']
-      };
-      break;
-    case 'news':
-      var articles = [];
-      message.forEach(function(article){
-        var item = {
-          Title: article['title'],
-          Description: article['description'],
-          PicUrl: article['pic'],
-          Url: article['url']
-        };
-        articles.push({ item: item });
-      });
-      replyMsg['Articles'] = articles;
-      replyMsg['ArticleCount'] = articles.length;
-      break;
-    default:
-      message = type;
-      type = 'text';
-      replyMsg['Content'] = message;
-      break;
-  }
-  replyMsg['MsgType'] = type;
-  return replyMsg;
-};
-
-var wechat = function(token, callback){
   return function(req, res){
-    checkSignature(token, req, res, function(){
-      var body = req.body;
-      var data = req.body['xml'];
-      var msg = parseMsg(data);
-      res.reply = function(type, message){
-        var replyMsg = getReplyMsg(msg, type, message);
-        var xml = jstoxml.toXML({ xml: replyMsg });
-        res.send(xml);
-      };
-      var seed  = msg.CreateTime;
-      if(!~msgQueue.indexOf(seed)){
-        msgQueue.push(seed);
-        req.msg = msg;
-        callback(req, res);
-      }
-    });
+    var query = url.parse(req.url, true).query;
+    var signature = genSignature(token, query.timestamp, query.nonce);
+    if(!(signature == query.signature)) return res.end('Invalidate signature');
+    if(req.method == 'GET') return res.end(query.echostr);
+    //
+    var buffer = [];
+    req.on('data', function(chunk){
+      buffer.push(chunk);
+    }).on('end', function(){
+      xml2js.parseString(buffer.join(''), function(err, result){
+        //
+        var message = {};
+        Object.keys(result.xml).forEach(function(key){
+          message[ key ] = result.xml[ key ][0];
+        });
+        //
+        var scope = {
+          send: function(reply){
+            if(typeof reply == 'string'){
+              reply = {
+                MsgType : 'text',
+                Content : reply
+              };
+            }
+            if(reply){
+              reply.FromUserName = message.ToUserName;
+              reply.ToUserName   = message.FromUserName;
+              reply.CreateTime   = +new Date;
+              res.end(js2xml.toXML({ xml: reply }));
+            }
+          }
+        };
+
+        scope.send(callback.call(scope, null, message));
+      });
+    }).on('error', callback);
   };
 };
-
-module.exports = wechat;
