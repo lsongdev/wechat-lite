@@ -1,9 +1,16 @@
+'use strict';
 const url  = require('url');
 const http = require('http');
-const wechat  = require('../server');
+const WeChat  = require('../');
 
-const server = http.createServer(wechat('token', function(err, message){
+var app = new WeChat.Server('token', function(err, message){
   return message.Content;
-}));
+});
 
-server.listen(3000);
+http.createServer(app).listen(3000);
+
+// const server = http.createServer(WeChat.Server('token', function(err, message){
+//   return message.Content;
+// }));
+
+// server.listen(3000);

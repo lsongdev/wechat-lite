@@ -1,6 +1,6 @@
 {
   "name": "wechat-lite",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "wechat js api",
   "main": "index.js",
   "scripts": {
@@ -31,8 +31,8 @@
     "test": "test"
   },
   "devDependencies": {
-    "connect": "^3.4.1",
-    "mocha": "^2.4.5",
-    "serve-static": "^1.10.2"
+    "connect": "*",
+    "mocha": "*",
+    "serve-static": "*"
   }
 }

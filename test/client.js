@@ -1,6 +1,6 @@
+'use strict';
 const WeChat = require('../');
 //
-
 describe('wechat client', function() {
 
   var wx = new WeChat({

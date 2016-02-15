@@ -1,3 +1,4 @@
+'use strict';
 const url     = require('url');
 const http    = require('http');
 const connect = require('connect');
