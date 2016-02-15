@@ -7,7 +7,7 @@ Server Handler
 
 下面演示了一个非常简单的用法:
 
-```
+```javascript
 const http   = require('http');
 const WeChat = require('wechat-lite');
 
@@ -28,7 +28,7 @@ server.listen(3000, function(err){
 
 这里仅仅原样返回了用户发送的消息(echo), 如果需要返回复杂的消息可以 `return` 一个 `JS Object` 
 
-```
+```javascript
 function handleMessage(err, message){
   return {
     ...
@@ -38,7 +38,7 @@ function handleMessage(err, message){
 
 ## Async Sending Message
 
-```
+```javascript
 function handleMessage(err, message){
   setTimeout(() => {
     this.send('async');
