@@ -1,13 +1,11 @@
 Browser side
 ============
 
-在页面 `html` 中引入 JS 文件:
-
 ```html
 <script src="//cdn.rawgit.com/song940/wechat-lite/master/browser.js" ></script>
 ```
 
-然后创建 `WeChat` 实例 
+create `WeChat` instance
 
 ```javascript
 var wx = new WeChat(/* signature */);
@@ -19,7 +17,7 @@ function onWeChatReady(){
 wx.ready(onWeChatReady);
 ```
 
-初始化
+Initialization
 
 ```javascript
 function onWeChatReady(){
@@ -28,5 +26,4 @@ function onWeChatReady(){
     'menu:share:appmessage'
   ]);
 }
-
 ```

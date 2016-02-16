@@ -1,14 +1,14 @@
 WeChat Client
 =============
 
-+ 获取 UUID
-+ 生成二维码
-+ 等待客户端扫描
-+ 获取登录凭证
-+ 客户端初始化
-+ 发送和接受消息
- 
-客户端接口依赖 [核心接口API](/lib/index.js), 所以需要创建API实例
++ Get UUID
++ Generate QRCode
++ Waiting for scan
++ Get login info
++ Client Initialization
++ Send and receive messages
+
+Client interface depend [WeChat Core API](/lib/index.js), you need to create an instance of `WeChat`
 
 ```javascript
 const WeChat = require('wechat-lite');
@@ -18,7 +18,7 @@ const wx = new WeChat({
 });
 ```
 
-## 获取 UUID
+## Get UUID
 
 ```js
 wx.getUUID().then(function(uuid){
@@ -26,13 +26,13 @@ wx.getUUID().then(function(uuid){
 })
 ```
 
-## 生成二维码
+## Generate QRCode
 
 ```js
 console.log(wx.qrcode(uuid));
 ```
 
-## 等待客户端扫描
+## Waiting for scan
 
 ```js
 (function wait(){
@@ -46,27 +46,28 @@ console.log(wx.qrcode(uuid));
 })()
 ```
 
-## 获取登录凭证
+## Get login info
 
 ```js
 wx.login(url).then(function(info){
-  console.log(login); // 用户登录凭证
+  console.log(info); // login info
 })
 ```
 
-## 客户端初始化
+## Client Initialization
 
 ```js
 const client = new WeChat.Client(login);
 
-client.init(); // 初始化
-```
-
-## 发送和接受消息
-
-```js
-client.send('hi').then(function(){
-  // 发送成功
+client.init().then(function(){
+  // success
 });
 ```
 
+## Send and receive messages
+
+```js
+client.send('hi').then(function(){
+  // success
+});
+```

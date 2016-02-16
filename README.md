@@ -11,7 +11,6 @@
 
 	npm install wechat-lite --save
 
-
 ## Documentation
 
 see [docs](/docs) .

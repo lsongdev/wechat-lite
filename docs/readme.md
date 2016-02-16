@@ -1,14 +1,11 @@
 wechat-lite
 ===========
 
-微信提供给开发者相当丰富的接口，用来满足各个业务场景的需求。
+[WeChat](mp.weixin.qq.com) offers developers many interfaces, Currently provided:
 
-目前大致分为几个方面：
-
-+ [微信分享](./browser.md) 网页在微信客户端中打开，用户将网页再次分享给好友或朋友圈等渠道
-+ [微信授权](./api.md) 网页在微信客户端中打开，获取当前微信用户授权，获取微信用户名称，头像，ID
-+ [微信服务端](./server.md) 用户关注公众帐号，与公众帐号发消息，开发者在服务端接收消息，并处理反馈给用户
-+ [微信客户端](./client.md) 客户端模式，使用官方非公开接口。模拟微信网页版客户端登录，收发消息
-
++ [WeChat Core API](./api.md) low-level core apis, signature, token, login and more .
++ [WeChat Browser SDK](./browser.md) call web/client apis in  wechat mobile client .
++ [WeChat Message Handler](./server.md) handle and respond message from official-account followers .
++ [WeChat Client](./client.md) use the official non-public interface, like [WeChat Web Client](wx.qq.com) send and receive messages .
 
 ---
