@@ -27,6 +27,7 @@ describe('wechat client', function() {
     (function wait(){
       wx.status(_uuid).then(function(status){
         if(status.code == 200){
+          console.log(status);
           url = status.redirect_uri;
           done();
         }else{

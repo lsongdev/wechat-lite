@@ -1,7 +1,10 @@
 'use strict';
-const url     = require('url');
 const http    = require('http');
-const connect = require('connect');
+const kelp    = require('kelp');
+const body    = require('kelp-body');
+const send    = require('kelp-send');
+const route   = require('kelp-route');
+const logger  = require('kelp-logger');
 const WeChat  = require('../../');
 
 const wx = new WeChat({
@@ -9,28 +12,19 @@ const wx = new WeChat({
   appSecret : 'ea6eea9459b57da58dbc673d1f52c4df'
 });
 
-const app = connect();
+const app = kelp();
 
-// simple logger
-app.use(function(req, res, next){
-  var start = new Date;
-  next();
-  console.log('-> %s %s %s %sms',
-    req.method    ,
-    req.url       ,
-    res.statusCode,
-    new Date - start);
-});
+app.use(send);
+app.use(body);
+app.use(logger);
 
-app.use('/callback', function(req, res){
-  var u = url.parse(req.url, true);
-
-  wx.getAuthorizeToken(u.query['code'])
+app.use(route('/callback', function(req, res){
+  wx.getAuthorizeToken(req.query['code'])
   .then(function(token){
-    return wx.getUser(token.access_token, token.openid);
+    return wx.getAuthorizeUser(token.access_token, token.openid);
   })
   .then(function(user){
-    res.end(`<!doctype html>
+    res.send(`<!doctype html>
     <html>
     <head>
       <title>${user.nickname} @ WeChat</title>
@@ -48,11 +42,11 @@ app.use('/callback', function(req, res){
     </html>
     `);
   })
-});
+}));
 
-app.use('/', function(req, res){
+app.use(route('/', function(req, res){
   var url = wx.getAuthorizeURL('http://m.maoyan.com/callback');
-  res.end(`<!doctype html>
+  res.send(`<!doctype html>
   <html>
     <head>
     <title>WeChat</title>
@@ -65,6 +59,6 @@ app.use('/', function(req, res){
       <img class="qr" src="http://api.lsong.org/qr?text=${encodeURIComponent(url)}" />
     </body>
   </html>`);
-});
+}));
 
 const server = http.createServer(app).listen(4000);
