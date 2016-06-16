@@ -24,6 +24,7 @@ app.use(route('/callback', function(req, res){
     return wx.getAuthorizeUser(token.access_token, token.openid);
   })
   .then(function(user){
+    console.log(user);
     res.send(`<!doctype html>
     <html>
     <head>
