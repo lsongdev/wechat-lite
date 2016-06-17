@@ -44,26 +44,26 @@ describe('wechat api', function() {
     });
   });
   
-  it('send template message', function(done) {
-    var templateId = 'zVwzW_Sm7Ln8mrf2a74-3XgWbDMPYbXVcjEbf-aA75o';
-    var data = {
-      name: 'Lsong',
-      content: 'test'
-    };
-  
-    wx.template_send(wx.token, openId, templateId, data, 'https://lsong.org').then(function(res){
-      assert.ifError(res.errcode, res.errmsg);
-      assert.ok(res.msgid)
-      done();
-    });
-  });
-  
-  it('send custom message', function(done) {
-    wx.custom_send(wx.token, openId, 'text', { content: 'test' }).then(function(res){
-      assert.ifError(res.errcode, res.errmsg);
-      done();
-    });
-  });
+  // it('send template message', function(done) {
+  //   var templateId = 'zVwzW_Sm7Ln8mrf2a74-3XgWbDMPYbXVcjEbf-aA75o';
+  //   var data = {
+  //     name: 'Lsong',
+  //     content: 'test'
+  //   };
+  //
+  //   wx.template_send(wx.token, openId, templateId, data, 'https://lsong.org').then(function(res){
+  //     assert.ifError(res.errcode, res.errmsg);
+  //     assert.ok(res.msgid)
+  //     done();
+  //   });
+  // });
+  //
+  // it('send custom message', function(done) {
+  //   wx.custom_send(wx.token, openId, 'text', { content: 'test' }).then(function(res){
+  //     assert.ifError(res.errcode, res.errmsg);
+  //     done();
+  //   });
+  // });
   //
   // it('menu list', function(done) {
   //   wx.menu_list(wx.token).then(function(res){
@@ -74,13 +74,11 @@ describe('wechat api', function() {
   //   });
   // });
   //
-  // it('set user remark', function(done) {
-  //   wx.user_remark(wx.token, openId, 'remark').then(function(res){
-  //     assert.ifError(res.errcode, res.errmsg);
-  //     done();
-  //   });
-  // });
-  
-  
+  it('set user remark', function(done) {
+    wx.user_remark(wx.token, openId, 'remark').then(function(res){
+      assert.ifError(res.errcode, res.errmsg);
+      done();
+    });
+  });
 
 });
