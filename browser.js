@@ -5,39 +5,21 @@
  * @param {[type]} ready  [description]
  * @docs http://mp.weixin.qq.com/wiki/7/aaa137b55fb2e0456bf8dd9148dd613f.html
  */
-function WeChat(config, ready){
-
+function WeChat(config){
   if(!(this instanceof WeChat)){
-    return new WeChat(config);
+    return new WeChat(config, apis, done);
   }
   var defaults = {
     signType: 'sha1'
   };
+  
   for(var key in config){
     defaults[ key ] = config[ key ];
   }
-
   this.config = defaults;
-
-  if(ready) this.ready(ready);
-
   return this;
 };
 
-/**
- * [function filter]
- * @param  {[type]} src    [description]
- * @param  {[type]} fields [description]
- * @return {[type]}        [description]
- */
-WeChat.filter = function(src, fields){
-  var obj = {};
-  for(var i in fields){
-    var key = fields[ i ];
-    obj[key] = src[key];
-  }
-  return obj;
-};
 /**
  * [function merge]
  * @param  {[type]} a [description]
@@ -83,13 +65,12 @@ WeChat.prototype.log = function(msg){
  */
 WeChat.prototype.ready = function(callback){
   var self = this;
-  var done = function(){
-    if(self.bridge) return self;
+  function done(){
     self.bridge = WeixinJSBridge;
     callback.call(self, self);
     return self;
   };
-  if(typeof WeixinJSBridge == 'object'){
+  if(typeof WeixinJSBridge === 'object'){
     return done();
   }
   if(document.addEventListener){
@@ -112,23 +93,17 @@ WeChat.prototype.init = function(apis, callback){
     verifyJsApiList: apis
   }, callback);
 };
-/**
- * [function network]
- * @param  {Function} callback [description]
- * @return {[type]}            [description]
- */
-WeChat.prototype.network = function(callback){
-  return this.invoke('getNetworkType', null, function(result){
-    callback(result.err_msg.match(/network_type:(\w+)/)[1]);
-  });
-};
+
 /**
  * [function description]
- * @param  {Function} callback [description]
- * @return {[type]}            [description]
+ * @param  {[type]} event   [description]
+ * @param  {[type]} handler [description]
+ * @return {[type]}         [description]
  */
-WeChat.prototype.close = function(callback){
-  return this.invoke('closeWindow', null, callback);
+WeChat.prototype.on = function(event, handler){
+  if(!this.bridge) return this.log('bridge is not defined');
+  this.bridge.on(event, handler);
+  return this;
 };
 
 /**
@@ -151,16 +126,24 @@ WeChat.prototype.invoke = function(method, args, callback){
   this.bridge.invoke(method, WeChat.merge(params, args), callback);
   return this;
 };
+
+/**
+ * [function network]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
+WeChat.prototype.network = function(callback){
+  return this.invoke('getNetworkType', null, function(result){
+    callback(result.err_msg.match(/network_type:(\w+)/)[1]);
+  });
+};
 /**
  * [function description]
- * @param  {[type]} event   [description]
- * @param  {[type]} handler [description]
- * @return {[type]}         [description]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
  */
-WeChat.prototype.on = function(event, handler){
-  if(!this.bridge) return this.log('bridge is not defined');
-  this.bridge.on(event, handler);
-  return this;
+WeChat.prototype.close = function(callback){
+  return this.invoke('closeWindow', null, callback);
 };
 
 /**
@@ -172,8 +155,8 @@ if (typeof define === 'function' && define.amd) {
   define([], function() {
     return WeChat;
   });
-} else if (typeof module != 'undefined' && module.exports) {
+} else if (typeof module !== 'undefined' && module.exports) {
   module.exports = WeChat;
 } else {
-  this.WeChat = WeChat;
+  window.WeChat = WeChat;
 }

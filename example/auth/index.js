@@ -5,12 +5,11 @@ const body    = require('kelp-body');
 const send    = require('kelp-send');
 const route   = require('kelp-route');
 const logger  = require('kelp-logger');
+const config  = require('kelp-config');
+
 const WeChat  = require('../../');
 
-const wx = new WeChat({
-  appId     : 'wx779ea5a9af3d5d09',
-  appSecret : 'ea6eea9459b57da58dbc673d1f52c4df'
-});
+const wx = new WeChat(config);
 
 const app = kelp();
 
@@ -19,11 +18,11 @@ app.use(body);
 app.use(logger);
 
 app.use(route('/callback', function(req, res){
-  wx.getAuthorizeToken(req.query['code'])
-  .then(function(token){
-    return wx.getAuthorizeUser(token.access_token, token.openid);
-  })
-  .then(function(user){
+  // step2 get auth token by code
+  wx.auth_token(req.query.code).then(function(token){
+    // step3 get user by token
+    return wx.auth_user(token.access_token, token.openid);
+  }).then(function(user){
     console.log(user);
     res.send(`<!doctype html>
     <html>
@@ -46,7 +45,9 @@ app.use(route('/callback', function(req, res){
 }));
 
 app.use(route('/', function(req, res){
-  var url = wx.getAuthorizeURL('http://m.maoyan.com/callback');
+  // step1
+  var url = wx.auth_url(config.auth_safe_domain + '/callback', WeChat.AUTH_SCOPE.USER);
+  console.log(url);
   res.send(`<!doctype html>
   <html>
     <head>

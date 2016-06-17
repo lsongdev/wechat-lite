@@ -39,7 +39,7 @@ window.onerror = function(err){
       'menu:share:timeline',
       'menu:share:appmessage'
     ], function(res){
-      alert(res.err_msg);
+      alert(res.err_msg || res.errMsg);
     });
   });
 });

@@ -1,0 +1,10 @@
+{
+  "appId"     : "wxfb9dc00461bcef17",
+  "appSecret" : "21f48e4c7c68683b681ca81ba60d3190",
+  
+  "openId"    : "ozwcHuC792LGHpQ0dYFlYoA2Uh_c",
+  "templateId": "iR3pX6CgJe4n1jPTwyIxxjpeJiSqfmBIuqmRoShFo4E",
+  
+  "js_safe_domain"  : "http://lsong.org",
+  "auth_safe_domain": "http://api.lsong.org"
+}
