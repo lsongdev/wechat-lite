@@ -20,17 +20,11 @@ app.use(send);
 app.use(body);
 app.use(serve(__dirname));
 
-var _ticket;
-
-wx.getToken()
-.then((token) => token.access_token)
-.then(wx.getTicket.bind(wx))
-.then(function(ticket){
-  _ticket = ticket.ticket;
-});
-
 app.use(route('/wechat', function(req, res){
-  res.end(JSON.stringify(wx.genSignature(_ticket)(req.query.url)));
+  wx.ticket().then(function(ticket){
+    // console.log(ticket);
+    res.end(JSON.stringify(wx.genSignature(ticket.ticket)(req.query.url)));
+  })
 }));
 
 var server = http.createServer(app).listen(4000);

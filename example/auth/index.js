@@ -19,9 +19,9 @@ app.use(body);
 app.use(logger);
 
 app.use(route('/callback', function(req, res){
-  wx.getAuthorizeToken(req.query['code'])
+  wx.auth_token(req.query['code'])
   .then(function(token){
-    return wx.getAuthorizeUser(token.access_token, token.openid);
+    return wx.auth_user(token.access_token, token.openid);
   })
   .then(function(user){
     console.log(user);
@@ -46,7 +46,7 @@ app.use(route('/callback', function(req, res){
 }));
 
 app.use(route('/', function(req, res){
-  var url = wx.getAuthorizeURL('http://m.maoyan.com/callback');
+  var url = wx.auth_url('http://m.maoyan.com/callback');
   res.send(`<!doctype html>
   <html>
     <head>

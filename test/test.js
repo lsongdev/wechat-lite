@@ -11,8 +11,18 @@ describe('wechat api', function() {
   
   var openId = 'ozwcHuC792LGHpQ0dYFlYoA2Uh_c';
   
+  it('get token', function(done) {
+    api.token().then(function(res){
+      // console.log(res);
+      assert.ok(res.access_token)
+      assert.ok(res.expires_in)
+      done();
+    });
+  });
+  //
   it('get ticket ', function(done) {
     api.ticket().then(function(ticket){
+      // console.log(ticket);
       assert.ifError(ticket.errcode, ticket.errmsg);
       done();
     });
