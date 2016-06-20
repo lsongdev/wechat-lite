@@ -78,6 +78,8 @@ describe('wechat api', function() {
       content: 'test'
     };
   
+  
+  
     api.template_send(templateId, data, 'https://lsong.org', openId).then(function(res){
       assert.ifError(res.errcode, res.errmsg);
       assert.ok(res.msgid)

@@ -1,10 +1,10 @@
 {
   "name": "wechat-lite",
-  "version": "2.2.1",
+  "version": "3.0.1",
   "description": "wechat js api",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test/test.js"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -24,7 +24,6 @@
   "dependencies": {
     "debug": "*",
     "jstoxml": "*",
-    "request-js": "*",
     "xml2js": "*"
   },
   "directories": {
