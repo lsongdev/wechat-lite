@@ -10,7 +10,7 @@ var api = new WeChat({
 describe('wechat api', function() {
   
   var openId = 'ozwcHuC792LGHpQ0dYFlYoA2Uh_c';
-
+  
   it('get ticket ', function(done) {
     api.ticket().then(function(ticket){
       assert.ifError(ticket.errcode, ticket.errmsg);
@@ -97,4 +97,26 @@ describe('wechat api', function() {
   //     console.log(res);
   //   });
   // });
+  //
+  it('create qrcode', function(done) {
+    api.qr(WeChat.QR_SCENE, {
+      scene: { scene_str: '123' }
+    }, 604800).then(function(res){
+      // console.log(res);
+      assert.ok(res.ticket);
+      assert.ok(res.url);
+      assert.equal(res.expire_seconds, 604800);
+      done();
+    });
+  });
+  
+  it('short url', function(done) {
+    api.short_url('https://github.com/song940/wechat-lite').then(function(res){
+      // console.log(res);
+      assert.ok(res.short_url);
+      assert.ifError(res.errcode, res.errmsg);
+      done();
+    });
+  });
+  
 });
