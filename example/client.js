@@ -1,6 +1,6 @@
 const WeChat = require('../');
 
-const client = new WeChat.Client({ appId: 'wx782c26e4c19acffb' });
+const client = new WeChat.Client(config.wechat);
 
 client.uuid().then(function(uuid){
   console.log('>', client.qrcode(uuid));

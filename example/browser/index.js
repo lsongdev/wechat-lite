@@ -8,10 +8,7 @@ const serve   = require('kelp-static');
 const logger  = require('kelp-logger');
 const WeChat  = require('../../');
 
-var wx = new WeChat({
-  appId     : 'wx779ea5a9af3d5d09',
-  appSecret : 'ea6eea9459b57da58dbc673d1f52c4df'
-});
+var wx = new WeChat(config.wechat);
 
 const app = kelp();
 

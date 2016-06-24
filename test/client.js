@@ -2,10 +2,9 @@
 'use strict';
 const assert = require('assert');
 const WeChat = require('../');
+const config = require('../package');
 
-var client = new WeChat.Client({
-  appId     : 'wx782c26e4c19acffb'
-});
+var client = new WeChat(config.wechat);
 
 describe('wechat client', function() {
   

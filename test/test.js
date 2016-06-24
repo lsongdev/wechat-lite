@@ -1,11 +1,9 @@
 'use strict';
 const assert = require('assert');
 const WeChat = require('../');
+const config = require('../package');
 
-var api = new WeChat({
-  appId     : 'wxfb9dc00461bcef17',
-  appSecret : '21f48e4c7c68683b681ca81ba60d3190'
-});
+var api = new WeChat(config.wechat);
 
 describe('wechat api', function() {
   

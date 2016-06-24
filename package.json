@@ -6,6 +6,10 @@
   "scripts": {
     "test": "mocha"
   },
+  "wechat": {
+    "appId"     : "xx",
+    "appSecret" : "xx"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/song940/wechat-lite.git"
