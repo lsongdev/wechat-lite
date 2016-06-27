@@ -75,23 +75,24 @@ describe('wechat api', function() {
     var templateId = 'iR3pX6CgJe4n1jPTwyIxxjpeJiSqfmBIuqmRoShFo4E';
   
     api.template_send(templateId, {
-      name: 'Lsong',
-      remark: 'test'
+      name:'测试商品',
+      remark: '测试备注'
     }, 'https://lsong.org', openId).then(function(res){
+      // console.log(res);
       assert.ifError(res.errcode, res.errmsg);
       assert.ok(res.msgid)
       done();
     });
   });
-  
+  //
   // it('send custom message', function(done) {
   //   api.custom_send(openId, 'text', { content: 'test' }).then(function(res){
-  //     // console.log(res);
+  //     console.log(res);
   //     assert.ifError(res.errcode, res.errmsg);
   //     done();
   //   });
   // });
-  
+  //
   it('menu list', function(done) {
     api.menu_list().then(function(res){
       // console.log(res);
@@ -100,13 +101,7 @@ describe('wechat api', function() {
       done();
     });
   });
-  //
-  // it('auth refresh token', function(done) {
-  //   api.auth_refresh().then(function(res){
-  //     console.log(res);
-  //   });
-  // });
-  //
+
   it('create qrcode', function(done) {
     api.qr(WeChat.QR_SCENE, {
       scene: { scene_str: '123' }
