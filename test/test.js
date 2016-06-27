@@ -8,6 +8,7 @@ var api = new WeChat(config.wechat);
 describe('wechat api', function() {
   
   var openId = 'ozwcHuC792LGHpQ0dYFlYoA2Uh_c';
+  // var openId = 'ogpecs5Ch6rAvgZCNVI7Tw9H15xw';
   
   it('get token', function(done) {
     api.token().then(function(res){
@@ -70,15 +71,13 @@ describe('wechat api', function() {
   });
   
   it('send template message', function(done) {
-    var templateId = 'zVwzW_Sm7Ln8mrf2a74-3XgWbDMPYbXVcjEbf-aA75o';
-    var data = {
+    // var templateId = 'h0DIYYP_eFCLUZCxoQ1pxeGxXDxXV6Pv-IL8KJwBBYY';
+    var templateId = 'iR3pX6CgJe4n1jPTwyIxxjpeJiSqfmBIuqmRoShFo4E';
+  
+    api.template_send(templateId, {
       name: 'Lsong',
-      content: 'test'
-    };
-  
-  
-  
-    api.template_send(templateId, data, 'https://lsong.org', openId).then(function(res){
+      remark: 'test'
+    }, 'https://lsong.org', openId).then(function(res){
       assert.ifError(res.errcode, res.errmsg);
       assert.ok(res.msgid)
       done();

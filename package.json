@@ -7,8 +7,8 @@
     "test": "mocha"
   },
   "wechat": {
-    "appId"     : "xx",
-    "appSecret" : "xx"
+    "appId" : "wxfb9dc00461bcef17",
+    "appSecret" : "21f48e4c7c68683b681ca81ba60d3190"
   },
   "repository": {
     "type": "git",

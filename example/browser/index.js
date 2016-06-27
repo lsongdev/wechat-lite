@@ -7,6 +7,7 @@ const route   = require('kelp-route');
 const serve   = require('kelp-static');
 const logger  = require('kelp-logger');
 const WeChat  = require('../../');
+const config  = require('../../package');
 
 var wx = new WeChat(config.wechat);
 
