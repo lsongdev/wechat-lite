@@ -1,6 +1,6 @@
 {
   "name": "wechat-lite",
-  "version": "3.0.1",
+  "version": "3.0.3",
   "description": "wechat js api",
   "main": "index.js",
   "scripts": {
