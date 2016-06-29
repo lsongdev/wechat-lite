@@ -17,11 +17,11 @@ app.use(body);
 app.use(logger);
 
 app.use(route('/callback', function(req, res){
-  wx.auth_token(req.query['code'])
-  .then(function(token){
+  // step2 get auth token by code
+  wx.auth_token(req.query.code).then(function(token){
+    // step3 get user by token
     return wx.auth_user(token.access_token, token.openid);
-  })
-  .then(function(user){
+  }).then(function(user){
     console.log(user);
     res.send(`<!doctype html>
     <html>
@@ -44,7 +44,8 @@ app.use(route('/callback', function(req, res){
 }));
 
 app.use(route('/', function(req, res){
-  var url = wx.auth_url('http://m.maoyan.com/callback');
+  // step1
+  var url = wx.auth_url('http://m.maoyan.com/callback', WeChat.AUTH_SCOPE.USER);
   res.send(`<!doctype html>
   <html>
     <head>
