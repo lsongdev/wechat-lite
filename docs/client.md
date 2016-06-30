@@ -21,7 +21,7 @@ const wx = new WeChat({
 ## Get UUID
 
 ```js
-wx.getUUID().then(function(uuid){
+wx.uuid().then(function(uuid){
   console.log(uuid);
 })
 ```

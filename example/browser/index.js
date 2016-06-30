@@ -6,10 +6,10 @@ const send    = require('kelp-send');
 const route   = require('kelp-route');
 const serve   = require('kelp-static');
 const logger  = require('kelp-logger');
+const config  = require('kelp-config');
 const WeChat  = require('../../');
-const config  = require('../../package');
 
-var wx = new WeChat(config.wechat);
+var wx = new WeChat(config);
 
 const app = kelp();
 
@@ -24,5 +24,9 @@ app.use(route('/wechat', function(req, res){
     res.end(JSON.stringify(wx.genSignature(ticket.ticket)(req.query.url)));
   })
 }));
+
+app.use(function(req, res, next){
+  res.end('Not Found')
+})
 
 var server = http.createServer(app).listen(4000);

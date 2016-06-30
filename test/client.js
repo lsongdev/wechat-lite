@@ -2,7 +2,7 @@
 'use strict';
 const assert = require('assert');
 const WeChat = require('../');
-const config = require('../package');
+const config = require('kelp-config');
 
 var client = new WeChat.Client({
   appId: 'wx782c26e4c19acffb'

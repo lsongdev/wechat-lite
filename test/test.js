@@ -1,14 +1,11 @@
 'use strict';
 const assert = require('assert');
 const WeChat = require('../');
-const config = require('../package');
+const config = require('kelp-config');
 
-var api = new WeChat(config.wechat);
+var api = new WeChat(config);
 
 describe('wechat api', function() {
-  
-  var openId = 'ozwcHuC792LGHpQ0dYFlYoA2Uh_c';
-  // var openId = 'ogpecs5Ch6rAvgZCNVI7Tw9H15xw';
   
   it('get token', function(done) {
     api.token().then(function(res){
@@ -36,7 +33,7 @@ describe('wechat api', function() {
   });
   
   it('get user', function(done) {
-    api.user(openId).then(function(user){
+    api.user(config.openId).then(function(user){
       // console.log(user);
       assert.ok(user.openid);
       assert.ifError(user.errcode, user.errmsg);
@@ -45,7 +42,7 @@ describe('wechat api', function() {
   });
   
   it('set user remark', function(done) {
-    api.user_remark(openId, 'remark').then(function(res){
+    api.user_remark(config.openId, 'remark').then(function(res){
       // console.log(res);
       assert.ifError(res.errcode, res.errmsg);
       done();
@@ -64,20 +61,17 @@ describe('wechat api', function() {
   });
   
   it('fetch user info', function(done) {
-    api.users_info([ openId ]).then(function(res){
+    api.users_info([ config.openId ]).then(function(res){
       assert.equal(res.user_info_list.length, 1);
       done();
     });
   });
   
   it('send template message', function(done) {
-    // var templateId = 'h0DIYYP_eFCLUZCxoQ1pxeGxXDxXV6Pv-IL8KJwBBYY';
-    var templateId = 'iR3pX6CgJe4n1jPTwyIxxjpeJiSqfmBIuqmRoShFo4E';
-  
-    api.template_send(templateId, {
+    api.template_send(config.templateId, {
       name:'测试商品',
       remark: '测试备注'
-    }, 'https://lsong.org', openId).then(function(res){
+    }, 'https://lsong.org', config.openId).then(function(res){
       // console.log(res);
       assert.ifError(res.errcode, res.errmsg);
       assert.ok(res.msgid)

@@ -1,4 +1,5 @@
 const WeChat = require('../');
+const config = require('kelp-config');
 
 const client = new WeChat.Client(config.wechat);
 

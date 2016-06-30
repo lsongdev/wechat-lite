@@ -5,10 +5,11 @@ const body    = require('kelp-body');
 const send    = require('kelp-send');
 const route   = require('kelp-route');
 const logger  = require('kelp-logger');
-const WeChat  = require('../../');
-const config  = require('../../package');
+const config  = require('kelp-config');
 
-const wx = new WeChat(config.wechat);
+const WeChat  = require('../../');
+
+const wx = new WeChat(config);
 
 const app = kelp();
 
@@ -45,7 +46,8 @@ app.use(route('/callback', function(req, res){
 
 app.use(route('/', function(req, res){
   // step1
-  var url = wx.auth_url('http://m.maoyan.com/callback', WeChat.AUTH_SCOPE.USER);
+  var url = wx.auth_url(config.auth_safe_domain + '/callback', WeChat.AUTH_SCOPE.USER);
+  console.log(url);
   res.send(`<!doctype html>
   <html>
     <head>
