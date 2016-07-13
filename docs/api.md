@@ -18,11 +18,11 @@ get authorize url
 var url = wx.auth_url('http://lsong.org/callback');
 ```
 
-when user pass request, browser will redirect
+when user accept request, browser will redirect
 
 ```js
 var code = req.query[ 'code' ];
-wx.auth_token().then(function(token){
+wx.auth_token(code).then(function(token){
   console.log(token);
 });
 ```
