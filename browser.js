@@ -70,7 +70,7 @@ WeChat.prototype.ready = function(callback){
     callback.call(self, self);
     return self;
   };
-  if(typeof WeixinJSBridge == 'object'){
+  if(typeof WeixinJSBridge === 'object'){
     return done();
   }
   if(document.addEventListener){
@@ -155,8 +155,8 @@ if (typeof define === 'function' && define.amd) {
   define([], function() {
     return WeChat;
   });
-} else if (typeof module != 'undefined' && module.exports) {
+} else if (typeof module !== 'undefined' && module.exports) {
   module.exports = WeChat;
 } else {
-  this.WeChat = WeChat;
+  window.WeChat = WeChat;
 }
