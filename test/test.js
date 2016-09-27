@@ -117,8 +117,4 @@ describe('wechat api', function() {
     });
   });
   
-  it('description', function(done) {
-    // body...
-  });
-  
 });
