@@ -6,10 +6,10 @@ const config = require('kelp-config');
 var api = new WeChat(config);
 
 describe('wechat api', function() {
-  
+
   it('get token', function(done) {
     api.token().then(function(res){
-      // console.log(res);
+      console.log(res);
       assert.ok(res.access_token)
       assert.ok(res.expires_in)
       done();
@@ -23,7 +23,7 @@ describe('wechat api', function() {
       done();
     });
   });
-  
+
   it('get callback ip', function(done) {
     api.callback_ip().then(function(res){
       assert.ok(res.ip_list)
@@ -31,7 +31,7 @@ describe('wechat api', function() {
       done()
     });
   });
-  
+
   it('get user', function(done) {
     api.user(config.openId).then(function(user){
       // console.log(user);
@@ -40,7 +40,7 @@ describe('wechat api', function() {
       done();
     });
   });
-  
+
   it('set user remark', function(done) {
     api.user_remark(config.openId, 'remark').then(function(res){
       // console.log(res);
@@ -48,7 +48,7 @@ describe('wechat api', function() {
       done();
     });
   });
-  
+
   it('list users', function(done) {
     api.users().then(function(res){
       // console.log(res);
@@ -59,14 +59,14 @@ describe('wechat api', function() {
       done()
     });
   });
-  
+
   it('fetch user info', function(done) {
     api.users_info([ config.openId ]).then(function(res){
       assert.equal(res.user_info_list.length, 1);
       done();
     });
   });
-  
+
   it('send template message', function(done) {
     api.template_send(config.templateId, {
       name:'测试商品',
@@ -107,7 +107,7 @@ describe('wechat api', function() {
       done();
     });
   });
-  
+
   it('short url', function(done) {
     api.short_url('https://github.com/song940/wechat-lite').then(function(res){
       // console.log(res);
@@ -116,7 +116,8 @@ describe('wechat api', function() {
       done();
     });
   });
-  
+
+
 });
 
 describe('authorize', function() {

@@ -55,3 +55,20 @@ api.template_send(templateId, {
   console.log(res);
 });
 ```
+
+wxapp send template message
+
+```js
+wx.wxopen_template_send(
+  'your-wxapp-openid'                          , // openId
+  '1e60145c56aa234690f7b3bc0ab140a0'           , // formId
+  'ZfBzzxZglGXrozh7erVXJ-OixRmDM6UiHkMGO76hFEI', // templateId
+  {
+    keyword1: 'keyword1',
+    keyword2: 'keyword2',
+    keyword3: 'keyword3'
+  }
+).then(function(res){
+  console.log(res);
+});
+```
