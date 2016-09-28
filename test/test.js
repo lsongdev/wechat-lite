@@ -116,5 +116,6 @@ describe('wechat api', function() {
       done();
     });
   });
+
   
 });
