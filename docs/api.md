@@ -58,7 +58,7 @@ api.template_send(templateId, {
 
 wxapp send template message
 
-```
+```js
 wx.wxopen_template_send(
   'your-wxapp-openid'                          , // openId
   '1e60145c56aa234690f7b3bc0ab140a0'           , // formId
