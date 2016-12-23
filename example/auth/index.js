@@ -19,7 +19,8 @@ app.use(logger);
 
 app.use(route('/callback', function(req, res){
   // step2 get auth token by code
-  wx.auth_token(req.query.code).then(function(token){
+  const { code } = req.query;
+  wx.auth_token(code).then(function(token){
     // step3 get user by token
     return wx.auth_user(token.access_token, token.openid);
   }).then(function(user){

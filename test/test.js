@@ -7,117 +7,79 @@ var api = new WeChat(config);
 
 describe('wechat api', function() {
 
-  it('get token', function(done) {
-    api.token().then(function(res){
-      console.log(res);
-      assert.ok(res.access_token)
-      assert.ok(res.expires_in)
-      done();
-    });
-  });
-  //
-  it('get ticket ', function(done) {
-    api.ticket().then(function(ticket){
-      // console.log(ticket);
-      assert.ifError(ticket.errcode, ticket.errmsg);
-      done();
-    });
-  });
-
-  it('get callback ip', function(done) {
-    api.callback_ip().then(function(res){
-      assert.ok(res.ip_list)
-      assert.ifError(res.errcode, res.errmsg);
-      done()
-    });
-  });
-
-  it('get user', function(done) {
-    api.user(config.openId).then(function(user){
-      // console.log(user);
-      assert.ok(user.openid);
-      assert.ifError(user.errcode, user.errmsg);
-      done();
-    });
-  });
-
-  it('set user remark', function(done) {
-    api.user_remark(config.openId, 'remark').then(function(res){
-      // console.log(res);
-      assert.ifError(res.errcode, res.errmsg);
-      done();
-    });
-  });
-
-  it('list users', function(done) {
-    api.users().then(function(res){
-      // console.log(res);
-      assert.ok(res.total);
-      assert.ok(res.count);
-      assert.ok(res.data);
-      assert.ok(res.next_openid);
-      done()
-    });
-  });
-
-  it('fetch user info', function(done) {
-    api.users_info([ config.openId ]).then(function(res){
-      assert.equal(res.user_info_list.length, 1);
-      done();
-    });
-  });
-
-  it('send template message', function(done) {
-    api.template_send(config.templateId, {
-      name:'测试商品',
-      remark: '测试备注'
-    }, 'https://lsong.org', config.openId).then(function(res){
-      // console.log(res);
-      assert.ifError(res.errcode, res.errmsg);
-      assert.ok(res.msgid)
-      done();
-    });
-  });
-  //
-  // it('send custom message', function(done) {
-  //   api.custom_send(openId, 'text', { content: 'test' }).then(function(res){
-  //     console.log(res);
-  //     assert.ifError(res.errcode, res.errmsg);
-  //     done();
-  //   });
+  // it('get token', async () => {
+  //   const token = await api.token();
+  //   assert.ok(token.access_token);
+  //   assert.equal(token.expires_in, 7200);
   // });
   //
-  it('menu list', function(done) {
-    api.menu_list().then(function(res){
-      // console.log(res);
-      assert.ok(res.is_menu_open);
-      assert.ifError(res.errcode, res.errmsg);
-      done();
-    });
+  it('get ticket ', async () => {
+    const ticket = await api.ticket();
+    assert.ok(ticket.ticket);
+    assert.equal(ticket.expires_in, 7200);
+    assert.equal(ticket.errcode, 0, ticket.errmsg);
   });
 
-  it('create qrcode', function(done) {
-    api.qr(WeChat.QR_SCENE, {
+  it('get callback ip', async () => {
+    const res = await api.callback_ip();
+    assert.ok(res.ip_list);
+    assert.ifError(res.errcode, res.errmsg);
+  });
+
+  it('get user', async () => {
+    const user = await api.user(config.openId)
+    assert.ok(user.openid);
+    assert.ifError(user.errcode, user.errmsg);
+  });
+
+  it('set user remark', async () => {
+    const res = await api.user_remark(config.openId, 'remark');
+    assert.equal(res.errcode, 0, res.errmsg);
+  });
+
+  it('list users', async () => {
+    const users = await api.users();
+    assert.ok(users.total);
+    assert.ok(users.count);
+    assert.ok(users.data);
+    assert.ok(users.next_openid);
+    assert.ok(Array.isArray(users.data.openid));
+  });
+
+  it('fetch user info', async () => {
+    const res = await api.users_info([ config.openId ]);
+    assert.equal(res.user_info_list.length, 1);
+  });
+
+  it('send template message', async () => {
+    const res = await api.template_send(config.templateId, {
+      name:'测试商品',
+      remark: '测试备注'
+    }, 'https://lsong.org', config.openId)
+    assert.ok(res.msgid);
+    assert.equal(res.errcode, 0, res.errmsg);
+  });
+
+  it('menu list', async () => {
+    const res = await api.menu_list();
+    assert.ok(res.is_menu_open);
+    assert.ifError(res.errcode, res.errmsg);
+  });
+
+  it('create qrcode', async () => {
+    const res = await api.qr(WeChat.QR_SCENE, {
       scene: { scene_str: '123' }
-    }, 604800).then(function(res){
-      // console.log(res);
-      assert.ok(res.ticket);
-      assert.ok(res.url);
-      assert.equal(res.expire_seconds, 604800);
-      done();
-    });
+    }, 604800);
+    assert.ok(res.ticket);
+    assert.ok(res.url);
+    assert.equal(res.expire_seconds, 604800);
   });
 
-  it('short url', function(done) {
-    api.short_url('https://github.com/song940/wechat-lite').then(function(res){
-      // console.log(res);
-      assert.ok(res.short_url);
-      assert.ifError(res.errcode, res.errmsg);
-      done();
-    });
+  it('short url', async () => {
+    const res = await api.short_url('https://github.com/song940/wechat-lite');
+    assert.ok(res.short_url);
+    assert.equal(res.errcode, 0, res.errmsg);
   });
-
-
 });
 
 describe('authorize', function() {

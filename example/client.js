@@ -1,24 +1,35 @@
-const WeChat = require('../');
-const config = require('kelp-config');
+const WeChat = require('..');
 
-const client = new WeChat.Client({
+const client = WeChat.Client({
   appId: 'wx782c26e4c19acffb'
 });
 
-client.on('scan', function(){
-  console.log('scan success');
+client.once('qrcode', url => {
+  console.log('[WeChat]>', url);
 });
 
-client.on('login', function(){
-  console.log('login success');
+client.on('scan', () => {
+  console.log('[WeChat]> scan');
 });
 
-client
-.uuid()
-.then(client.printQrcode.bind(client))
-.then(client.wait       .bind(client))
-.then(client.login      .bind(client))
-.then(client.init       .bind(client))
-.then(function(info){
-  console.log(info);
-})
+client.on('login', user => {
+  console.log('[WeChat]> login success');
+});
+
+client.on('session:enter', () => {
+  console.log('session:enter');
+});
+
+client.on('session:quit', () => {
+  console.log('session:quit');
+});
+
+client.on('moments', () => {
+  console.log('moments');
+});
+
+client.on('message:text', msg => {
+  const [ from ] = client.MemberList.filter(x => x.UserName === msg.FromUserName);
+  console.log('[%s]>', from ? from.NickName : msg.FromUserName, msg.Content);
+  // client.send(msg.Content, msg.FromUserName);
+});
