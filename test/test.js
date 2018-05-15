@@ -7,12 +7,12 @@ var api = new WeChat(config);
 
 describe('wechat api', function() {
 
-  // it('get token', async () => {
-  //   const token = await api.token();
-  //   assert.ok(token.access_token);
-  //   assert.equal(token.expires_in, 7200);
-  // });
-  //
+  it('get token', async () => {
+    const token = await api.token();
+    assert.ok(token.access_token);
+    assert.equal(token.expires_in, 7200);
+  });
+  
   it('get ticket ', async () => {
     const ticket = await api.ticket();
     assert.ok(ticket.ticket);

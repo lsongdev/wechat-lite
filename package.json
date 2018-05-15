@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/song940/wechat-lite.git"
+    "url": "git+https://github.com/song940/wechat-lite.git"
   },
   "keywords": [
     "wechat",
@@ -28,7 +28,13 @@
     "mkdirp": "^0.5.1",
     "xml2js": "*"
   },
+  "engines": {
+    "node": ">=8.11.1"
+  },
   "directories": {
+    "doc": "docs",
+    "example": "example",
+    "lib": "lib",
     "test": "test"
   },
   "devDependencies": {
