@@ -6,6 +6,10 @@
   "scripts": {
     "test": "mocha test/test.js"
   },
+  "bin": {
+    "wxapp": "bin/wxapp",
+    "wechat": "bin/wechat"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/song940/wechat-lite.git"
