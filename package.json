@@ -29,8 +29,10 @@
     "glob": "^7.1.2",
     "iconv-lite": "^0.4.19",
     "jstoxml": "*",
-    "mkdirp": "^0.5.1",
-    "xml2js": "*"
+    "kelp-argv": "^1.0.1",
+    "mkdirp": "latest",
+    "xml2js": "*",
+    "xttp": "latest"
   },
   "engines": {
     "node": ">=8.11.1"

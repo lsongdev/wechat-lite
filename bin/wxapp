@@ -1,44 +1,29 @@
 #!/usr/bin/env node
 
-const {
-  MINA
-} = require('..');
+const fs = require('fs');
+const path = require('path');
+const program = require('kelp-argv');
+const { MINA } = require('..');
+
+const { HOME } = process.env;
+const config = path.resolve(`${HOME}/.wxapp`);
 
 const devtools = new MINA();
 
-const program = options => {
-  const commands = {};
-  return {
-    command(name, fn){
-      commands[name] = fn;
-      return this;
-    },
-    parse(argv){
-      const [ name = 'help', ...args ] = argv.slice(2);
-      const command = commands[name];
-      if(typeof command === 'function'){
-        command.call(this, args.reduce((args, flag) => {
-          const [ key, value = true ] = flag.split('=');
-          args[key.slice(2)] = value;
-          return args;
-        }, {}));
-      }else{
-        console.error(`command "${name}" not found`);
-      }
-      return this;
-    }
-  };
-};
+try{
+  devtools.newticket = fs.readFileSync(config, 'utf8');
+}catch(e){
+  console.log('no ticket');
+}
 
 program()
+.command('help', () => {
+  console.log('help');
+})
 .command('login', async () => {
   devtools.qrconnect({
     redirect_uri: 'https://mp.weixin.qq.com/xxx'
-  }, async (err, {
-    state,
-    qrcode,
-    code
-  }) => {
+  }, async (err, { state, qrcode, code }) => {
     switch (state) {
       case 0:
         console.log('qrcode', qrcode);
@@ -47,15 +32,19 @@ program()
         console.log('scan success', code);
         const user = await devtools.login(code);
         devtools.newticket = user.newticket;
+        fs.writeFileSync(config, user.newticket);
         console.log('user', user);
         break;
     }
   });
 })
-.command('preview', async ({ filename, path }) => {
-  await devtools.preview(filename, path);
+.command('preview', async ({ path }) => {
+  const current = process.cwd();
+  const package = MINA.pack(current);
+  const res = await devtools.preview(package, path);
+  console.log('preview', res);
 })
 .command('upload', async ({ filename, version, message }) => {
   await devtools.publish(filename, version, message);
 })
-.parse(process.argv);
+.parse();

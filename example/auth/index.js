@@ -59,7 +59,7 @@ app.use(route('/', function(req, res){
     </head>
     <body>
       <h1>Scan QRCode on this below</h1>
-      <img class="qr" src="http://api.lsong.org/qr?text=${encodeURIComponent(url)}" />
+      <img class="qr" src="https://api.lsong.org/qr?text=${encodeURIComponent(url)}" />
     </body>
   </html>`);
 }));
