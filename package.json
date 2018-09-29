@@ -26,10 +26,9 @@
   },
   "homepage": "https://github.com/song940/wechat-lite",
   "dependencies": {
-    "glob": "^7.1.2",
-    "iconv-lite": "^0.4.19",
+    "glob": "*",
     "jstoxml": "*",
-    "kelp-argv": "^1.0.1",
+    "kelp-argv": "latest",
     "mkdirp": "latest",
     "xml2js": "*",
     "xttp": "latest"

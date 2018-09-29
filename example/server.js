@@ -8,16 +8,19 @@ const app = new WeChat.Server('token', function(err, message){
   switch (message.MsgType) {
     case 'text':
       return message.Content;
-      break;
     case 'link':
       return message.Url;
-      break;
     case 'location':
       return message.Label;
+    case 'event':
+      if(message.Event === 'subscribe'){
+        return "Hello, welcome to my wechat channel";
+      }
       break;
+    case 'image':
+      return message.PicUrl;
     default:
       return message;
-      break;
   }
 });
 

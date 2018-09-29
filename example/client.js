@@ -29,7 +29,9 @@ client.on('moments', () => {
 });
 
 client.on('message:text', msg => {
-  const [ from ] = client.MemberList.filter(x => x.UserName === msg.FromUserName);
+  const [ from ] = (client.MemberList || []).filter(x => x.UserName === msg.FromUserName);
   console.log('[%s]>', from ? from.NickName : msg.FromUserName, msg.Content);
-  // client.send(msg.Content, msg.FromUserName);
+  if(from && from.NickName === 'Dtting'){
+    client.send(msg.Content,  msg.FromUserName);
+  }
 });
