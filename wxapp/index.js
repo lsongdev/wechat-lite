@@ -5,7 +5,7 @@ const zlib = require('zlib');
 const qs = require('querystring');
 const https = require('https');
 const mkdirp = require('mkdirp');
-const WeChat = require('..');
+const WeChat = require('../lib');
 const pack = require('./pack');
 const unpack = require('./unpack');
 
@@ -71,7 +71,7 @@ class MINA extends WeChat {
       ext_appid: '',
       os: 'darwin',
       path: 'pages/index/index',
-      clientversion: '1021802080',
+      clientversion: '1021809101',
     }, options);
     const query = qs.stringify(options);
     return new Promise((resolve, reject) => {

@@ -52,7 +52,7 @@ const pack = (dir, options) => {
 const $ = (v, u = 1) => {
   const buffer = Buffer.alloc(u);
   switch(u){
-    case 1: buffer.writeUIntLE(v); break;
+    case 1: buffer.writeUIntLE(v, 0, 1); break;
     case 4: buffer.writeUInt32BE(v); break;
   }
   return buffer;
