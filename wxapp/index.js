@@ -71,7 +71,7 @@ class MINA extends WeChat {
       ext_appid: '',
       os: 'darwin',
       path: 'pages/index/index',
-      clientversion: '1021809101',
+      clientversion: '1021902010',
     }, options);
     const query = qs.stringify(options);
     return new Promise((resolve, reject) => {

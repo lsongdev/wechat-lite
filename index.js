@@ -1,5 +1,4 @@
 'use strict';
-
 const WeChat  = require('./lib');
 // expose
 WeChat.Client = require('./lib/client');
