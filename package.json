@@ -28,7 +28,7 @@
   "dependencies": {
     "glob": "*",
     "jstoxml": "*",
-    "kelp-argv": "latest",
+    "kelp-cli": "latest",
     "mkdirp": "latest",
     "xml2js": "*",
     "xttp": "latest"
