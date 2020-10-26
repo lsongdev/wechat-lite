@@ -1,6 +1,6 @@
 {
   "name": "wechat-lite",
-  "version": "3.1.13",
+  "version": "3.2.1",
   "description": "wechat js api",
   "main": "index.js",
   "scripts": {
@@ -26,6 +26,8 @@
   },
   "homepage": "https://github.com/song940/wechat-lite",
   "dependencies": {
+    "fast-gbk": "^0.0.1",
+    "form-data": "^3.0.0",
     "glob": "*",
     "jstoxml": "*",
     "kelp-cli": "latest",

@@ -1,11 +1,12 @@
-const { MINA } = require('..');
 
-const devtools = new MINA();
+import WeChat from '../index.js';
+
+const devtools = new WeChat({ appid: 'wxde40e023744664cb' });
 
 devtools.qrconnect({
   redirect_uri: 'https://mp.weixin.qq.com/xxx'
-}, async (err, { state, qrcode, code }) => {
-  switch(state){
+}, async ({ state, qrcode, code }) => {
+  switch (state) {
     case 0:
       console.log('qrcode', qrcode);
       break;

@@ -1,4 +1,5 @@
-const WeChat = require('..');
+import WeChat from '../index.js';
+
 
 const client = WeChat.Client({
   appId: 'wx782c26e4c19acffb'
@@ -13,7 +14,11 @@ client.on('scan', () => {
 });
 
 client.on('login', user => {
-  console.log('[WeChat]> login success');
+  console.log('[WeChat]> login success', user);
+});
+
+client.on('kickout', () => {
+  console.log('[WeChat]> kickout');
 });
 
 client.on('session:enter', () => {
@@ -33,3 +38,5 @@ client.on('message:text', msg => {
   console.log('[%s]>', from ? from.NickName : msg.FromUserName, msg.Content);
   client.send(msg.Content,  'filehelper');
 });
+
+client.login();

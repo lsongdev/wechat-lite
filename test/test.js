@@ -1,7 +1,7 @@
 'use strict';
-const assert = require('assert');
-const WeChat = require('../');
-const config = require('kelp-config');
+import assert from 'assert';
+import WeChat from '../index.js';
+import config from 'kelp-config';
 
 var api = new WeChat(config);
 
@@ -12,7 +12,7 @@ describe('wechat api', function() {
     assert.ok(token.access_token);
     assert.equal(token.expires_in, 7200);
   });
-  
+
   it('get ticket ', async () => {
     const ticket = await api.ticket();
     assert.ok(ticket.ticket);
@@ -27,7 +27,7 @@ describe('wechat api', function() {
   });
 
   it('get user', async () => {
-    const user = await api.user(config.openId)
+    const user = await api.user_get(config.openId)
     assert.ok(user.openid);
     assert.ifError(user.errcode, user.errmsg);
   });
@@ -38,7 +38,7 @@ describe('wechat api', function() {
   });
 
   it('list users', async () => {
-    const users = await api.users();
+    const users = await api.user_list();
     assert.ok(users.total);
     assert.ok(users.count);
     assert.ok(users.data);
@@ -47,7 +47,7 @@ describe('wechat api', function() {
   });
 
   it('fetch user info', async () => {
-    const res = await api.users_info([ config.openId ]);
+    const res = await api.user_get(config.openId);
     assert.equal(res.user_info_list.length, 1);
   });
 
@@ -61,7 +61,7 @@ describe('wechat api', function() {
   });
 
   it('menu list', async () => {
-    const res = await api.menu_list();
+    const res = await api.menu_get();
     assert.ok(res.is_menu_open);
     assert.ifError(res.errcode, res.errmsg);
   });

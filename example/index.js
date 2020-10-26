@@ -1,24 +1,15 @@
-const WeChat = require('..');
+const WeChat = require('../index.js');
 
-const wechat = new WeChat({ appid: 'wxde40e023744664cb' });
+(async () => {
 
-wechat.qrconnect({
-  redirect_uri: 'https://mp.weixin.qq.com/debug/cgi-bin/webdebugger/qrcode'
-}, (err, res) => {
-  if(err) return console.error(err);
-  switch(res.state){
-    case 0:
-      console.log('Your qrcode is', res.qrcode);
-      break;
-    case 404:
-      console.log('scan ');
-      break;
-    case 405:
-      console.log('Your login code is', res.code);
-      break;
-    case 666:
-      console.log('expired');
-      break;
-  }
-})
+  const wechat = new WeChat({
+    appid: 'wxfb9dc00461bcef17',
+    secret: '21f48e4c7c68683b681ca81ba60d3190'
+  });
 
+  const { data: { openid: users } } = await wechat.user_list();
+  console.log('users:', users);
+  const user = await wechat.user_get(users[0]);
+  console.log('user:', user);
+
+})();

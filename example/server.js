@@ -1,9 +1,9 @@
 'use strict';
-const http    = require('http');
-const WeChat  = require('..');
+import http from 'http';
+import WeChat from '../index.js';
 
-const app = new WeChat.Server('token', function(err, message){
-  if(err) return console.error(err);
+const app = new WeChat.Server('token', function (err, message) {
+  if (err) return console.error(err);
   // console.log('Incoming', message);
   switch (message.MsgType) {
     case 'text':
@@ -13,7 +13,7 @@ const app = new WeChat.Server('token', function(err, message){
     case 'location':
       return message.Label;
     case 'event':
-      if(message.Event === 'subscribe'){
+      if (message.Event === 'subscribe') {
         return "Hello, welcome to my wechat channel";
       }
       break;

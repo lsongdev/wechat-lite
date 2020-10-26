@@ -1,25 +1,24 @@
 const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
-const crypto = require('crypto');
 
 const pack = (dir, options) => {
-  options = Object.assign({ 
+  options = Object.assign({
     nodir: true
   }, options);
   const files = glob
-  .sync(`${dir}/**`, options)
-  .map(filename => {
-    const data = fs.readFileSync(filename);
-    return {
-      data,
-      filename
-    };
-  });
+    .sync(`${dir}/**`, options)
+    .map(filename => {
+      const data = fs.readFileSync(filename);
+      return {
+        data,
+        filename
+      };
+    });
   let datas = [], offset = 18 + (12 * files.length);
-  const names = files.map(({filename, data}) => {
+  const names = files.map(({ filename, data }) => {
     filename = path.relative(dir, filename);
-    const name = new Buffer.from(`/${filename.replace(/\\/g,'/')}`);
+    const name = new Buffer.from(`/${filename.replace(/\\/g, '/')}`);
     offset += name.length;
     datas.push(data);
     return name;
@@ -46,12 +45,12 @@ const pack = (dir, options) => {
     $(datas.length, 4),
     $(0xED)
   ]);
-  return Buffer.concat([ header, metas, datas ]);
+  return Buffer.concat([header, metas, datas]);
 };
 
 const $ = (v, u = 1) => {
   const buffer = Buffer.alloc(u);
-  switch(u){
+  switch (u) {
     case 1: buffer.writeUIntLE(v, 0, 1); break;
     case 4: buffer.writeUInt32BE(v); break;
   }

@@ -10,41 +10,41 @@ const config = path.resolve(`${HOME}/.wxapp`);
 
 const devtools = new MINA();
 
-try{
+try {
   devtools.newticket = fs.readFileSync(config, 'utf8');
-}catch(e){
+} catch (e) {
   console.log('no ticket');
 }
 
 program()
-.command('help', () => {
-  console.log('help');
-})
-.command('login', async () => {
-  devtools.qrconnect({
-    redirect_uri: 'https://mp.weixin.qq.com/xxx'
-  }, async (err, { state, qrcode, code }) => {
-    switch (state) {
-      case 0:
-        console.log('qrcode', qrcode);
-        break;
-      case 405:
-        console.log('scan success', code);
-        const user = await devtools.login(code);
-        devtools.newticket = user.newticket;
-        fs.writeFileSync(config, user.newticket);
-        console.log('user', user);
-        break;
-    }
-  });
-})
-.command('preview', async ({ path }) => {
-  const current = process.cwd();
-  const package = MINA.pack(current);
-  const res = await devtools.preview(package, path);
-  console.log('preview', res);
-})
-.command('upload', async ({ filename, version, message }) => {
-  await devtools.publish(filename, version, message);
-})
-.parse();
+  .command('help', () => {
+    console.log('help');
+  })
+  .command('login', async () => {
+    devtools.qrconnect({
+      redirect_uri: 'https://mp.weixin.qq.com/xxx'
+    }, async (err, { state, qrcode, code }) => {
+      switch (state) {
+        case 0:
+          console.log('qrcode', qrcode);
+          break;
+        case 405:
+          console.log('scan success', code);
+          const user = await devtools.login(code);
+          devtools.newticket = user.newticket;
+          fs.writeFileSync(config, user.newticket);
+          console.log('user', user);
+          break;
+      }
+    });
+  })
+  .command('preview', async ({ path }) => {
+    const current = process.cwd();
+    const package = MINA.pack(current);
+    const res = await devtools.preview(package, path);
+    console.log('preview', res);
+  })
+  .command('upload', async ({ filename, version, message }) => {
+    await devtools.publish(filename, version, message);
+  })
+  .parse();
