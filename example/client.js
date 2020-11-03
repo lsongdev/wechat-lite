@@ -1,5 +1,4 @@
-import WeChat from '../index.js';
-
+const WeChat = require('..');
 
 const client = WeChat.Client({
   appId: 'wx782c26e4c19acffb'

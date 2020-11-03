@@ -1,6 +1,6 @@
 'use strict';
-import http from 'http';
-import WeChat from '../index.js';
+const http = require('http');
+const WeChat = require('..');
 
 const app = new WeChat.Server('token', function (err, message) {
   if (err) return console.error(err);

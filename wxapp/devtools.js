@@ -1,5 +1,5 @@
 const https = require('https');
-const { get, readStream } = require('../core');
+const { get, readStream } = require('../lib/core');
 
 const login = code =>
   Promise

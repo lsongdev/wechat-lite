@@ -1,4 +1,4 @@
-const WeChat = require('../index.js');
+const WeChat = require('..');
 
 (async () => {
 
