@@ -1,5 +1,4 @@
-const https = require('https');
-const { get, readStream } = require('../lib/core');
+const { get, post, readStream } = require('../lib/core');
 
 const login = code =>
   Promise
@@ -16,7 +15,6 @@ const login = code =>
 const upload = (appid, newticket, type, data, options) => {
   options = Object.assign({
     _r: Math.random(),
-    gzip: 1,
     appid,
     newticket,
     platform: 0,
@@ -25,29 +23,15 @@ const upload = (appid, newticket, type, data, options) => {
     path: 'pages/index/index',
     clientversion: '1021902010',
   }, options);
+  if (typeof data === 'string')
+    data = fs.readFileSync(data);
+  if (options.gzip) {
+    options.gzip = 1;
+    data = zlib.gzipSync(data);
+  }
   const query = qs.stringify(options);
-  return new Promise((resolve, reject) => {
-    if (typeof data === 'string')
-      data = fs.readFileSync(data);
-    if (options.gzip)
-      data = zlib.gzipSync(data);
-    const req = https.request({
-      method: 'post',
-      path: `${type}?${query}`,
-      hostname: 'servicewechat.com',
-      headers: {
-        'content-length': data.length
-      }
-    }, res => {
-      let buffer = '';
-      res
-        .on('error', reject)
-        .on('data', chunk => buffer += chunk)
-        .on('end', () => resolve(JSON.parse(buffer)))
-    });
-    req.on('error', reject);
-    req.write(data);
-    req.end();
+  return post(`https://servicewechat.com${type}?${query}`, data, {
+    'content-length': data.length
   });
 };
 

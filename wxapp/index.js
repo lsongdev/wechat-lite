@@ -1,4 +1,3 @@
-
 const fs = require('fs');
 const util = require('util');
 const path = require('path');
@@ -32,17 +31,37 @@ class MINA extends WeChat {
   constructor() {
     super({ appid: 'wxde40e023744664cb' });
   }
-  async login(fn) {
+  /**
+   * login
+   * @param {*} onStateChange
+   * @returns
+   */
+  async login(onStateChange) {
     const redirect_uri = 'https://mp.weixin.qq.com/xxx';
-    const code = await this.qrconnect({ redirect_uri }, fn);
+    const code = await this.qrconnect({ redirect_uri }, onStateChange);
     const { newticket } = await login(code);
     return this.newticket = newticket;
   }
+  /**
+   * preview
+   * @param {*} filename
+   * @param {*} path
+   * @returns
+   */
   preview(filename, path) {
+    const { appid, newticket } = this;
     return upload(appid, newticket, '/wxa-dev/testsource', filename, { path });
   }
+  /**
+   * publish
+   * @param {*} filename
+   * @param {*} version
+   * @param {*} message
+   * @returns
+   */
   publish(filename, version = '0.0.1', message = '') {
-    return upload('/wxa-dev/commitsource', filename, {
+    const { appid, newticket } = this;
+    return upload(appid, newticket, '/wxa-dev/commitsource', filename, {
       'user-version': version,
       'user-desc': message,
     });
@@ -59,7 +78,6 @@ class MINA extends WeChat {
     const token = await this.requestToken();
     return wxacode.getwxacodeunlimit(token);
   }
-
 }
 
 MINA.pack = _pack;
